@@ -1,0 +1,29 @@
+/* src/app/globals.css additions */
+@layer utilities {
+  .bg-obsidian { background-color: #09090b; }
+  .bg-surface-card { background-color: #18181c; }
+  .bg-surface-elevated { background-color: #222228; }
+  
+  .text-gold { color: #D4AF37; }
+  .bg-gold { background-color: #D4AF37; }
+  .border-gold { border-color: rgba(212, 175, 55, 0.25); }
+  .border-gold-hover:hover { border-color: rgba(212, 175, 55, 0.6); }
+  
+  .gold-gradient-text {
+    background: linear-gradient(135deg, #FFF6D1 0%, #D4AF37 50%, #AA8C2C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .gold-gradient-bg {
+    background: linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%);
+  }
+
+  .card-gold-glow {
+    box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.08);
+  }
+  
+  .card-gold-glow:hover {
+    box-shadow: 0 0 30px -2px rgba(212, 175, 55, 0.18);
+  }
+}
