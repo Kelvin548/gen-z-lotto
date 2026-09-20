@@ -96,15 +96,15 @@ model User {
   createdAt           DateTime           @default(now()) @map("created_at")
   updatedAt           DateTime           @updatedAt @map("updated_at")
 
-  profile         UserProfile?
-  wallet          Wallet?
-  sessions        UserSession[]
+  profile        UserProfile?
+  wallet         Wallet?
+  sessions       UserSession[]
   otpVerifications OTPVerification[]
-  tickets         Ticket[]
-  deposits        Deposit[]
-  withdrawals     Withdrawal[]
-  limits          ResponsibleGamingLimit[]
-  selfExclusions  SelfExclusion[]
+  tickets        Ticket[]
+  deposits       Deposit[]
+  withdrawals    Withdrawal[]
+  limits         ResponsibleGamingLimit[]
+  selfExclusions SelfExclusion[]
 
   @@map("users")
 }
@@ -221,13 +221,13 @@ model LedgerEntry {
 }
 
 model FinancialAuditLog {
-  id            String                @id @default(uuid())
-  transactionId String?               @map("transaction_id")
-  actorId       String?               @map("actor_id")
+  id            String   @id @default(uuid())
+  transactionId String?  @map("transaction_id")
+  actorId       String?  @map("actor_id")
   action        String
   target        String?
   metadata      Json?
-  createdAt     DateTime              @default(now()) @map("created_at")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   transaction   FinancialTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 
@@ -272,16 +272,16 @@ model GameType {
 }
 
 model Draw {
-  id          String     @id @default(uuid())
-  gameId      String     @map("game_id")
-  drawNumber  String     @unique @map("draw_number")
-  scheduledAt DateTime   @map("scheduled_at")
-  closedAt    DateTime?  @map("closed_at")
-  status      DrawStatus @default(DRAFT)
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  id            String     @id @default(uuid())
+  gameId        String     @map("game_id")
+  drawNumber    String     @unique @map("draw_number")
+  scheduledAt   DateTime   @map("scheduled_at")
+  closedAt      DateTime?  @map("closed_at")
+  status        DrawStatus @default(DRAFT)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
 
-  game          Game          @relation(fields: [gameId], references: [id])
+  game          Game           @relation(fields: [gameId], references: [id])
   winningNumber WinningNumber?
   tickets       Ticket[]
 
@@ -475,35 +475,3 @@ model SystemSetting {
 
   @@map("system_settings")
 }
-
-// prisma/seed.ts (or your initialization script)
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
-
-async function main() {
-  const hashedPassword = await bcrypt.hash('AdminSecure2026!', 10);
-  
-  // Pre-provision the locked admin account
-  await prisma.user.upsert({
-    where: { email: 'admin@genzlotto.test' },
-    update: {},
-    create: {
-      name: 'System Administrator',
-      email: 'admin@genzlotto.test',
-      phone: '+233200000000',
-      password: hashedPassword,
-      role: 'ADMIN',
-    },
-  });
-
-  console.log('Admin account pre-provisioned successfully.');
-}
-
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-}).finally(async () => {
-  await prisma.disconnect();
-});
