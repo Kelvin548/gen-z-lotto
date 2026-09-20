@@ -6,19 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "test:auth": "ts-node --project tsconfig.scripts.json scripts/run-auth-tests.ts"
+    "test:auth": "ts-node --project tsconfig.scripts.json scripts/run-auth-tests.ts",
+    "postinstall": "prisma generate"
   },
   "prisma": {
-  "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
-  
   "dependencies": {
     "@prisma/client": "^5.14.0",
     "argon2": "^0.40.1",
