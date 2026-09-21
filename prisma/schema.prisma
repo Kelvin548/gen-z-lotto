@@ -83,19 +83,20 @@ enum LedgerEntryDirection {
 // ==========================================
 
 model User {
-  id                  String             @id @default(uuid())
-  phoneNumber         String             @unique @map("phone_number")
-  email               String?            @unique
-  passwordHash        String             @map("password_hash")
-  status              UserStatus         @default(PENDING_VERIFICATION)
-  isPhoneVerified     Boolean            @default(false) @map("is_phone_verified")
-  failedLoginAttempts Int                @default(0) @map("failed_login_attempts")
-  lockedUntil         DateTime?          @map("locked_until")
-  termsAcceptedAt     DateTime           @map("terms_accepted_at")
-  privacyAcceptedAt   DateTime           @map("privacy_accepted_at")
-  createdAt           DateTime           @default(now()) @map("created_at")
-  updatedAt           DateTime           @updatedAt @map("updated_at")
+  id                  String     @id @default(uuid())
+  phoneNumber         String     @unique @map("phone_number")
+  email               String?    @unique
+  passwordHash        String     @map("password_hash")
+  status              UserStatus @default(PENDING_VERIFICATION)
+  isPhoneVerified     Boolean    @default(false) @map("is_phone_verified")
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until")
+  termsAcceptedAt     DateTime   @map("terms_accepted_at")
+  privacyAcceptedAt   DateTime   @map("privacy_accepted_at")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
 
+<<<<<<< HEAD
   profile        UserProfile?
   wallet         Wallet?
   sessions       UserSession[]
@@ -105,6 +106,17 @@ model User {
   withdrawals    Withdrawal[]
   limits         ResponsibleGamingLimit[]
   selfExclusions SelfExclusion[]
+=======
+  profile          UserProfile?
+  wallet           Wallet?
+  sessions         UserSession[]
+  otpVerifications OTPVerification[]
+  tickets          Ticket[]
+  deposits         Deposit[]
+  withdrawals      Withdrawal[]
+  limits           ResponsibleGamingLimit[]
+  selfExclusions   SelfExclusion[]
+>>>>>>> 5ba81bf (Add role-based access control for admin numbers and protect admin routes)
 
   @@map("users")
 }
@@ -161,7 +173,7 @@ model Wallet {
   id                    String       @id @default(uuid())
   userId                String       @unique @map("user_id")
   availableBalanceMinor BigInt       @default(0) @map("available_balance_minor") // Integer minor units (Pesewas)
-  heldBalanceMinor      BigInt       @default(0) @map("held_balance_minor")      // Integer minor units (Pesewas)
+  heldBalanceMinor      BigInt       @default(0) @map("held_balance_minor") // Integer minor units (Pesewas)
   currency              String       @default("GHS")
   status                WalletStatus @default(ACTIVE)
   createdAt             DateTime     @default(now()) @map("created_at")
@@ -186,8 +198,8 @@ model FinancialTransaction {
   paymentProvider String?                    @map("payment_provider")
   idempotencyKey  String?                    @unique @map("idempotency_key")
   metadata        Json?
-  actorId         String?                    @map("actor_id")     // User ID or Admin ID
-  ticketId        String?                    @map("ticket_id")    // Optional link to associated ticket
+  actorId         String?                    @map("actor_id") // User ID or Admin ID
+  ticketId        String?                    @map("ticket_id") // Optional link to associated ticket
   createdAt       DateTime                   @default(now()) @map("created_at")
   updatedAt       DateTime                   @updatedAt @map("updated_at")
 
@@ -203,17 +215,17 @@ model FinancialTransaction {
 }
 
 model LedgerEntry {
-  id            String                @id @default(uuid())
-  transactionId String                @map("transaction_id")
-  walletId      String?               @map("wallet_id")    // Nullable for system accounts
+  id            String               @id @default(uuid())
+  transactionId String               @map("transaction_id")
+  walletId      String?              @map("wallet_id") // Nullable for system accounts
   direction     LedgerEntryDirection
-  amountMinor   BigInt                @map("amount_minor") // Positive integer minor units
-  currency      String                @default("GHS")
+  amountMinor   BigInt               @map("amount_minor") // Positive integer minor units
+  currency      String               @default("GHS")
   description   String
-  createdAt     DateTime              @default(now()) @map("created_at")
+  createdAt     DateTime             @default(now()) @map("created_at")
 
-  transaction   FinancialTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  wallet        Wallet?              @relation(fields: [walletId], references: [id], onDelete: SetNull)
+  transaction FinancialTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  wallet      Wallet?              @relation(fields: [walletId], references: [id], onDelete: SetNull)
 
   @@index([transactionId])
   @@index([walletId])
@@ -229,7 +241,7 @@ model FinancialAuditLog {
   metadata      Json?
   createdAt     DateTime @default(now()) @map("created_at")
 
-  transaction   FinancialTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  transaction FinancialTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 
   @@index([transactionId])
   @@index([actorId])
@@ -256,14 +268,14 @@ model Game {
 }
 
 model GameType {
-  id           String   @id @default(uuid())
-  gameId       String   @map("game_id")
+  id           String  @id @default(uuid())
+  gameId       String  @map("game_id")
   name         String
   slug         String
-  minSelection Int      @map("min_selection")
-  maxSelection Int      @map("max_selection")
-  multiplier   Decimal  @db.Decimal(10, 2)
-  isActive     Boolean  @default(true) @map("is_active")
+  minSelection Int     @map("min_selection")
+  maxSelection Int     @map("max_selection")
+  multiplier   Decimal @db.Decimal(10, 2)
+  isActive     Boolean @default(true) @map("is_active")
 
   game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
@@ -369,7 +381,7 @@ model Withdrawal {
 
 model AdminUser {
   id           String   @id @default(uuid())
-  email        String   @unique
+  phoneNumber  String   @unique @map("phone_number") // Updated from email to match phone auth
   passwordHash String   @map("password_hash")
   name         String
   isActive     Boolean  @default(true) @map("is_active")

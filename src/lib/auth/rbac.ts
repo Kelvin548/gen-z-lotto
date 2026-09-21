@@ -73,7 +73,8 @@ export async function requireRole(allowedRoles: string[]): Promise<AuthResult> {
   if (allowedRoles.includes("ADMIN")) {
     const adminUser = await prisma.adminUser.findFirst({
       where: {
-        email: auth.session.phoneNumber,
+        phoneNumber: auth.user.phoneNumber,
+        isActive: true,
       },
     });
 

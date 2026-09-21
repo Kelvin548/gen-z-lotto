@@ -6,7 +6,15 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.AUTH_SECRET || 'super-secret-at-least-32-characters-long-key'
 );
 
-const PROTECTED_ROUTES = ['/dashboard', '/wallet', '/tickets', '/play', '/account', '/results'];
+const PROTECTED_ROUTES = [
+  '/dashboard', 
+  '/wallet', 
+  '/tickets', 
+  '/play', 
+  '/account', 
+  '/results', 
+  '/admin' // Added admin protection here
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

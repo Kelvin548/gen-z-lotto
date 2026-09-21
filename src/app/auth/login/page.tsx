@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+// Your designated admin numbers (both international and local formats)
+const ADMIN_NUMBERS = [
+  '+233544893582', '0544893582',
+  '+233597984108', '0597984108',
+  '+233242760138', '0242760138'
+];
+
 export default function LoginPage() {
   const router = useRouter();
   const [phone, setPhone] = useState('');
@@ -30,11 +37,19 @@ export default function LoginPage() {
         throw new Error(data.error || data.message || 'Login failed');
       }
 
-      setMessage('✅ Login successful! Redirecting to dashboard...');
+      setMessage('✅ Login successful! Redirecting...');
 
-      // Direct straight to the customer dashboard interface immediately
+      // Check if the user is an admin from API response or hardcoded list
+      const cleanPhone = phone.trim();
+      const isAdmin = data.isAdmin || data.role === 'ADMIN' || ADMIN_NUMBERS.includes(cleanPhone);
+
+      // Route admins to admin dashboard, regular users to customer dashboard
       setTimeout(() => {
-        router.push('/dashboard');
+        if (isAdmin) {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
       }, 1000);
     } catch (err: any) {
       setMessage(`❌ ${err.message}`);

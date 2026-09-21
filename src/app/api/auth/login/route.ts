@@ -82,15 +82,28 @@ export async function POST(req: Request) {
       },
     });
 
+    // ==========================================
+    // CHECK IF USER IS AN ADMIN
+    // ==========================================
+    const adminUser = await prisma.adminUser.findFirst({
+      where: {
+        phoneNumber: user.phoneNumber, // or phone_number depending on your schema field definition
+        isActive: true,
+      },
+    });
+    
+    const isAdmin = !!adminUser;
+
     await createSessionCookie({
       userId: user.id,
       phoneNumber: user.phoneNumber,
-      role: 'USER',
+      role: isAdmin ? 'ADMIN' : 'USER',
       status: user.status,
     });
 
     return NextResponse.json({
       success: true,
+      isAdmin: isAdmin, // Sends flag to the frontend login page
       message: 'Login successful.',
     });
 

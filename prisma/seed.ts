@@ -1,11 +1,36 @@
 import { PrismaClient, DrawStatus } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting GEN Z LOTTO Phase 5 Database Seed (DEMO Environment)...');
 
-  // 1. DEMO CUSTOMER WITH 10,000 MINOR UNITS (GHS 100.00)
+  // ==========================================
+  // 1. SEED ADMIN USERS
+  // ==========================================
+  const adminPasswordHash = await bcrypt.hash('AdminSecurePassword123!', 10);
+  const adminNumbers = ['+233544893582', '+233597984108', '+233242760138'];
+
+  for (const phone of adminNumbers) {
+    await prisma.adminUser.upsert({
+      where: { phoneNumber: phone },
+      update: {
+        isActive: true,
+      },
+      create: {
+        phoneNumber: phone,
+        passwordHash: adminPasswordHash,
+        name: `Admin ${phone.slice(-4)}`,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`✅ Admin accounts verified/created for: ${adminNumbers.join(', ')}`);
+
+  // ==========================================
+  // 2. DEMO CUSTOMER WITH 10,000 MINOR UNITS (GHS 100.00)
+  // ==========================================
   const demoUser = await prisma.user.upsert({
     where: { phoneNumber: '+233000000000' },
     update: {},
@@ -38,7 +63,9 @@ async function main() {
 
   console.log(`✅ Demo customer verified: ${demoUser.phoneNumber}`);
 
-  // 2. SEED DEMO GAMES & GAME TYPES
+  // ==========================================
+  // 3. SEED DEMO GAMES & GAME TYPES
+  // ==========================================
   const genZGame = await prisma.game.upsert({
     where: { slug: 'gen-z-daily-590' },
     update: {
@@ -83,7 +110,9 @@ async function main() {
 
   console.log(`✅ Games created/verified: ${genZGame.name}, ${nlaGame.name}`);
 
-  // 3. SEED DEMO DRAWS
+  // ==========================================
+  // 4. SEED DEMO DRAWS
+  // ==========================================
   const now = new Date();
 
   // Draw 1: Open Draw (Closes in 4 hours)
