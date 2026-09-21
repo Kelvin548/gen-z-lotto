@@ -83,40 +83,28 @@ enum LedgerEntryDirection {
 // ==========================================
 
 model User {
-  id                  String     @id @default(uuid())
-  phoneNumber         String     @unique @map("phone_number")
-  email               String?    @unique
-  passwordHash        String     @map("password_hash")
-  status              UserStatus @default(PENDING_VERIFICATION)
-  isPhoneVerified     Boolean    @default(false) @map("is_phone_verified")
-  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
-  lockedUntil         DateTime?  @map("locked_until")
-  termsAcceptedAt     DateTime   @map("terms_accepted_at")
-  privacyAcceptedAt   DateTime   @map("privacy_accepted_at")
-  createdAt           DateTime   @default(now()) @map("created_at")
-  updatedAt           DateTime   @updatedAt @map("updated_at")
+  id                  String             @id @default(uuid())
+  phoneNumber         String             @unique @map("phone_number")
+  email               String?            @unique
+  passwordHash        String             @map("password_hash")
+  status              UserStatus         @default(PENDING_VERIFICATION)
+  isPhoneVerified     Boolean            @default(false) @map("is_phone_verified")
+  failedLoginAttempts Int                @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?          @map("locked_until")
+  termsAcceptedAt     DateTime           @map("terms_accepted_at")
+  privacyAcceptedAt   DateTime           @map("privacy_accepted_at")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
 
-<<<<<<< HEAD
-  profile        UserProfile?
-  wallet         Wallet?
-  sessions       UserSession[]
-  otpVerifications OTPVerification[]
-  tickets        Ticket[]
-  deposits       Deposit[]
-  withdrawals    Withdrawal[]
-  limits         ResponsibleGamingLimit[]
-  selfExclusions SelfExclusion[]
-=======
-  profile          UserProfile?
-  wallet           Wallet?
-  sessions         UserSession[]
-  otpVerifications OTPVerification[]
-  tickets          Ticket[]
-  deposits         Deposit[]
-  withdrawals      Withdrawal[]
-  limits           ResponsibleGamingLimit[]
-  selfExclusions   SelfExclusion[]
->>>>>>> 5ba81bf (Add role-based access control for admin numbers and protect admin routes)
+  profile             UserProfile?
+  wallet              Wallet?
+  sessions            UserSession[]
+  otpVerifications    OTPVerification[]
+  tickets             Ticket[]
+  deposits            Deposit[]
+  withdrawals         Withdrawal[]
+  limits              ResponsibleGamingLimit[]
+  selfExclusions      SelfExclusion[]
 
   @@map("users")
 }
@@ -293,7 +281,7 @@ model Draw {
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
-  game          Game           @relation(fields: [gameId], references: [id])
+  game          Game          @relation(fields: [gameId], references: [id])
   winningNumber WinningNumber?
   tickets       Ticket[]
 
@@ -352,8 +340,8 @@ model Deposit {
   status        FinancialTransactionStatus @default(PENDING)
   createdAt     DateTime                   @default(now()) @map("created_at")
 
-  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet      Wallet                @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet      Wallet               @relation(fields: [walletId], references: [id], onDelete: Cascade)
   transaction FinancialTransaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@map("deposits")
@@ -369,7 +357,7 @@ model Withdrawal {
   status        FinancialTransactionStatus @default(PENDING)
   createdAt     DateTime                   @default(now()) @map("created_at")
 
-  user        User                  @relation(fields: [userId], references: [id])
+  user        User                 @relation(fields: [userId], references: [id])
   transaction FinancialTransaction? @relation(fields: [transactionId], references: [id])
 
   @@map("withdrawals")
