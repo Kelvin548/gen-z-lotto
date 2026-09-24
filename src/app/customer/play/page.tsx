@@ -48,8 +48,8 @@ export default function PlayArenaPage() {
       case 'Direct 4': return 4;
       case 'Direct 5': return 5;
       case 'Perm 2':
-      case 'Perm 3':
-      case 'Banker': return 10;
+      case 'Perm 3': return 25; // Perm games allow up to 25 numbers
+      case 'Banker': return 1;  // Banker strictly allows only 1 number
       default: return 10;
     }
   };
@@ -82,7 +82,8 @@ export default function PlayArenaPage() {
 
     let baseMultiplier = 240;
     if (selectedGameType === 'Direct 1') baseMultiplier = 10;
-    if (selectedGameType === 'Direct 2' || selectedGameType === 'Banker') baseMultiplier = 240;
+    if (selectedGameType === 'Direct 2') baseMultiplier = 240;
+    if (selectedGameType === 'Banker') baseMultiplier = 89; // Banker multiplier set to 89
     if (selectedGameType === 'Direct 3' || selectedGameType === 'Perm 3') baseMultiplier = 2100;
     if (selectedGameType === 'Direct 4') baseMultiplier = 6000;
     if (selectedGameType === 'Direct 5') baseMultiplier = 44000;
@@ -101,11 +102,14 @@ export default function PlayArenaPage() {
   };
 
   const toggleNumber = (num: number) => {
+    const maxAllowed = getMaxNumbers(selectedGameType);
     if (selectedNumbers.includes(num)) {
       setSelectedNumbers(selectedNumbers.filter((n) => n !== num));
     } else {
-      const maxAllowed = getMaxNumbers(selectedGameType);
-      if (selectedNumbers.length < maxAllowed) {
+      if (maxAllowed === 1) {
+        // For Banker or Direct 1, selecting a new number replaces the old one
+        setSelectedNumbers([num]);
+      } else if (selectedNumbers.length < maxAllowed) {
         setSelectedNumbers([...selectedNumbers, num].sort((a, b) => a - b));
       } else {
         alert(`${selectedGameType} allows a maximum of ${maxAllowed} number(s).`);
@@ -145,10 +149,10 @@ export default function PlayArenaPage() {
   };
 
   const handleOpenPaymentModal = () => {
-    if (selectedGameType.startsWith('Direct')) {
+    if (selectedGameType.startsWith('Direct') || selectedGameType === 'Banker') {
       const requiredCount = getMaxNumbers(selectedGameType);
       if (selectedNumbers.length !== requiredCount) {
-        alert(`${selectedGameType} requires exactly ${requiredCount} numbers. You have selected ${selectedNumbers.length}.`);
+        alert(`${selectedGameType} requires exactly ${requiredCount} number(s). You have selected ${selectedNumbers.length}.`);
         return;
       }
     } else if (selectedGameType === 'Perm 2' && selectedNumbers.length < 2) {
