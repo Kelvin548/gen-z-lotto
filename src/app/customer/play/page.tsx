@@ -2,6 +2,18 @@
 
 import { useState } from 'react';
 
+// Helper to calculate combinations (n choose r) for Perm games
+function calculateCombinations(n: number, r: number): number {
+  if (n < r) return 0;
+  let numerator = 1;
+  let denominator = 1;
+  for (let i = 0; i < r; i++) {
+    numerator *= (n - i);
+    denominator *= (i + 1);
+  }
+  return numerator / denominator;
+}
+
 export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Direct 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
@@ -31,15 +43,37 @@ export default function PlayArenaPage() {
       case 'Direct 5': return 5;
       case 'Perm 2':
       case 'Perm 3':
-      case 'Banker': return 10; // Allow multiple selections for perms
-      default: return 5;
+      case 'Banker': return 10; // Allow up to 10 numbers for perms
+      default: return 10;
     }
   };
 
+  // Helper to get required selection size (r) for combination calculations
+  const getRequiredSelectionSize = (type: string) => {
+    switch (type) {
+      case 'Perm 2': return 2;
+      case 'Perm 3': return 3;
+      default: return 1;
+    }
+  };
+
+  // Calculate lines dynamically
+  const calculateTotalLines = () => {
+    if (selectedGameType.startsWith('Perm')) {
+      const r = getRequiredSelectionSize(selectedGameType);
+      return calculateCombinations(selectedNumbers.length, r);
+    }
+    // For Direct games, 1 line if exact numbers are picked
+    const required = getMaxNumbers(selectedGameType);
+    return selectedNumbers.length === required ? 1 : 0;
+  };
+
+  const totalLines = calculateTotalLines();
+  const totalStake = totalLines * stakePerLine;
+
   const handleGameTypeChange = (type: string) => {
     setSelectedGameType(type);
-    // Reset selected numbers when switching game types to avoid invalid states
-    setSelectedNumbers([]);
+    setSelectedNumbers([]); // Reset selection on game type change
   };
 
   const toggleNumber = (num: number) => {
@@ -50,7 +84,7 @@ export default function PlayArenaPage() {
       if (selectedNumbers.length < maxAllowed) {
         setSelectedNumbers([...selectedNumbers, num].sort((a, b) => a - b));
       } else {
-        alert(`${selectedGameType} allows a maximum of ${maxAllowed} number(s). Switch to a Perm game if you want to select more numbers.`);
+        alert(`${selectedGameType} allows a maximum of ${maxAllowed} number(s).`);
       }
     }
   };
@@ -72,13 +106,22 @@ export default function PlayArenaPage() {
   };
 
   const handleOpenPaymentModal = () => {
-    const requiredCount = getMaxNumbers(selectedGameType);
-    if (selectedGameType.startsWith('Direct') && selectedNumbers.length !== requiredCount) {
-      alert(`${selectedGameType} requires exactly ${requiredCount} numbers. You have selected ${selectedNumbers.length}.`);
+    if (selectedGameType.startsWith('Direct')) {
+      const requiredCount = getMaxNumbers(selectedGameType);
+      if (selectedNumbers.length !== requiredCount) {
+        alert(`${selectedGameType} requires exactly ${requiredCount} numbers. You have selected ${selectedNumbers.length}.`);
+        return;
+      }
+    } else if (selectedGameType === 'Perm 2' && selectedNumbers.length < 2) {
+      alert('Perm 2 requires at least 2 numbers selected.');
+      return;
+    } else if (selectedGameType === 'Perm 3' && selectedNumbers.length < 3) {
+      alert('Perm 3 requires at least 3 numbers selected.');
       return;
     }
-    if (selectedNumbers.length === 0) {
-      alert('Please select at least one number.');
+
+    if (totalLines <= 0) {
+      alert('Invalid selection for this game type.');
       return;
     }
     if (stakePerLine <= 0) {
@@ -108,8 +151,9 @@ export default function PlayArenaPage() {
         username: currentUser,
         gameType: selectedGameType,
         numbers: selectedNumbers,
-        stake: stakePerLine,
-        total: stakePerLine,
+        stakePerLine: stakePerLine,
+        lines: totalLines,
+        total: totalStake,
         date: new Date().toLocaleString(),
         status: 'Active',
         paymentMethod: `${momoProvider} Momo (${momoNumber})`
@@ -128,7 +172,6 @@ export default function PlayArenaPage() {
 
   return (
     <div className="space-y-6 relative z-10">
-      
       <div>
         <h2 className="text-3xl font-black tracking-tight text-white mb-1">5/90 Play Arena</h2>
         <p className="text-xs text-zinc-400">Select your draw, game type, and numbers to lock in your stake.</p>
@@ -219,12 +262,16 @@ export default function PlayArenaPage() {
             </div>
             <p className="text-xs text-zinc-400 mb-6">Review your selections before placement.</p>
 
-            <div className="space-y-2 mb-6">
+            <div className="space-y-3 mb-6">
               <div className="flex items-center justify-between text-xs text-zinc-400">
                 <span>Selected Numbers:</span>
-                <span className="font-bold text-amber-400">
+                <span className="font-bold text-amber-400 text-right max-w-[180px] truncate">
                   {selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'None'}
                 </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-zinc-400">
+                <span>Total Lines:</span>
+                <span className="font-bold text-amber-400">{totalLines}</span>
               </div>
             </div>
 
@@ -268,13 +315,13 @@ export default function PlayArenaPage() {
             <div className="pt-4 border-t border-zinc-900 flex items-center justify-between mb-6">
               <span className="text-xs uppercase font-bold text-zinc-400">Total Stake:</span>
               <span className="text-xl font-black text-amber-400">
-                GH₵ {stakePerLine > 0 ? stakePerLine : 0}.00
+                GH₵ {totalStake.toFixed(2)}
               </span>
             </div>
 
             <button
               onClick={handleOpenPaymentModal}
-              disabled={selectedNumbers.length === 0 || stakePerLine <= 0}
+              disabled={selectedNumbers.length === 0 || totalLines <= 0 || stakePerLine <= 0}
               className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all active:scale-[0.98]"
             >
               Confirm & Place Bet
@@ -300,11 +347,11 @@ export default function PlayArenaPage() {
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2">
               <div className="flex justify-between text-xs text-zinc-400">
                 <span>Amount to Pay:</span>
-                <span className="font-bold text-amber-400 text-sm">GH₵ {stakePerLine}.00</span>
+                <span className="font-bold text-amber-400 text-sm">GH₵ {totalStake.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-xs text-zinc-400">
                 <span>Game Slip:</span>
-                <span className="font-semibold text-white">{selectedGameType} ({selectedNumbers.length} numbers)</span>
+                <span className="font-semibold text-white">{selectedGameType} ({totalLines} lines)</span>
               </div>
             </div>
 
@@ -351,7 +398,7 @@ export default function PlayArenaPage() {
                     Approving Prompt on Phone...
                   </>
                 ) : (
-                  `Pay GH₵ ${stakePerLine}.00 & Place Bet`
+                  `Pay GH₵ ${totalStake.toFixed(2)} & Place Bet`
                 )}
               </button>
             </div>
