@@ -15,10 +15,16 @@ function calculateCombinations(n: number, r: number): number {
 }
 
 export default function PlayArenaPage() {
-  const [selectedGameType, setSelectedGameType] = useState('Direct 2');
-  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-  const [stakePerLine, setStakePerLine] = useState<number>(2);
-  const [customStakeInput, setCustomStakeInput] = useState<string>('2');
+  const [selectedGameType, setSelectedGameType] = useState('Perm 2');
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([7, 14, 16, 25]);
+  const [stakePerLine, setStakePerLine] = useState<number>(5);
+  const [customStakeInput, setCustomStakeInput] = useState<string>('5');
+  const [selectedDraw, setSelectedDraw] = useState('NLA VAG THURSDAY');
+
+  // Booking Code Search States
+  const [searchBookingCode, setSearchBookingCode] = useState('');
+  const [searchedTicketResult, setSearchedTicketResult] = useState<any>(null);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Payment Modal States
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -43,7 +49,7 @@ export default function PlayArenaPage() {
       case 'Direct 5': return 5;
       case 'Perm 2':
       case 'Perm 3':
-      case 'Banker': return 10; // Allow up to 10 numbers for perms
+      case 'Banker': return 10;
       default: return 10;
     }
   };
@@ -63,7 +69,6 @@ export default function PlayArenaPage() {
       const r = getRequiredSelectionSize(selectedGameType);
       return calculateCombinations(selectedNumbers.length, r);
     }
-    // For Direct games, 1 line if exact numbers are picked
     const required = getMaxNumbers(selectedGameType);
     return selectedNumbers.length === required ? 1 : 0;
   };
@@ -71,9 +76,26 @@ export default function PlayArenaPage() {
   const totalLines = calculateTotalLines();
   const totalStake = totalLines * stakePerLine;
 
+  // Potential Wins Calculation
+  const getPotentialWins = () => {
+    let baseMultiplier = 240;
+    if (selectedGameType === 'Direct 1') baseMultiplier = 10;
+    if (selectedGameType === 'Direct 2' || selectedGameType === 'Banker') baseMultiplier = 240;
+    if (selectedGameType === 'Direct 3' || selectedGameType === 'Perm 3') baseMultiplier = 2100;
+    if (selectedGameType === 'Direct 4') baseMultiplier = 6000;
+    if (selectedGameType === 'Direct 5') baseMultiplier = 44000;
+    if (selectedGameType === 'Perm 2') baseMultiplier = 240;
+
+    const minWin = stakePerLine * baseMultiplier;
+    const maxWin = selectedGameType.startsWith('Perm') ? totalLines * stakePerLine * baseMultiplier : minWin;
+    return { minWin, maxWin };
+  };
+
+  const { minWin, maxWin } = getPotentialWins();
+
   const handleGameTypeChange = (type: string) => {
     setSelectedGameType(type);
-    setSelectedNumbers([]); // Reset selection on game type change
+    setSelectedNumbers([]); 
   };
 
   const toggleNumber = (num: number) => {
@@ -102,6 +124,21 @@ export default function PlayArenaPage() {
       setStakePerLine(parsed);
     } else {
       setStakePerLine(0);
+    }
+  };
+
+  const handleSearchBookingCode = () => {
+    if (!searchBookingCode.trim()) {
+      alert('Please enter a booking code to search.');
+      return;
+    }
+    const allTickets = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
+    const found = allTickets.find((t: any) => t.bookingCode === searchBookingCode.trim() || t.id === searchBookingCode.trim());
+    if (found) {
+      setSearchedTicketResult(found);
+      setIsSearchModalOpen(true);
+    } else {
+      alert('Booking code not found in active records.');
     }
   };
 
@@ -145,16 +182,22 @@ export default function PlayArenaPage() {
 
       const currentUser = localStorage.getItem('active_username') || 'customer_user';
       const storageKey = `user_tickets_${currentUser}`;
+      const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
 
       const newTicket = {
         id: `#TKT-${Math.floor(1000 + Math.random() * 9000)}`,
+        bookingCode: bookingCode,
         username: currentUser,
         gameType: selectedGameType,
+        gameName: selectedDraw,
         numbers: selectedNumbers,
         stakePerLine: stakePerLine,
         lines: totalLines,
         total: totalStake,
-        date: new Date().toLocaleString(),
+        minWin: minWin,
+        maxWin: maxWin,
+        date: new Date().toLocaleDateString(),
+        closingTime: '9:55 AM',
         status: 'Active',
         paymentMethod: `${momoProvider} Momo (${momoNumber})`
       };
@@ -165,7 +208,7 @@ export default function PlayArenaPage() {
       const masterLedger = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
       localStorage.setItem('admin_all_tickets', JSON.stringify([newTicket, ...masterLedger]));
 
-      alert('Payment successful! Your bet has been placed.');
+      alert(`Payment successful! Your Booking Code is: ${bookingCode}`);
       window.location.href = '/customer/tickets';
     }, 2500);
   };
@@ -177,6 +220,32 @@ export default function PlayArenaPage() {
         <p className="text-xs text-zinc-400">Select your draw, game type, and numbers to lock in your stake.</p>
       </div>
 
+      {/* Booking Code Quick Search Banner */}
+      <div className="bg-zinc-950/80 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">🔑</span>
+          <div>
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Have a Booking Code?</h4>
+            <p className="text-[11px] text-zinc-400">Paste your code below to instantly load and review a stake.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <input
+            type="text"
+            placeholder="e.g. BK-482910"
+            value={searchBookingCode}
+            onChange={(e) => setSearchBookingCode(e.target.value)}
+            className="rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-2.5 text-xs text-white font-semibold focus:outline-none focus:border-amber-400 w-full sm:w-48"
+          />
+          <button
+            onClick={handleSearchBookingCode}
+            className="rounded-xl bg-amber-400 px-5 py-2.5 text-black text-xs font-black uppercase tracking-wider hover:bg-amber-300 transition shrink-0"
+          >
+            Search
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <div className="lg:col-span-2 space-y-6">
@@ -185,14 +254,18 @@ export default function PlayArenaPage() {
             <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
               1. Select Active Draw
             </h3>
-            <select className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white text-sm font-semibold focus:outline-none focus:border-amber-400 transition-all">
-              <option>National Weekly Lotto (Midweek) - Closes in 04h 22m</option>
-              <option>Monday Special Draw</option>
-              <option>Lucky Tuesday Draw</option>
-              <option>Midweek Draw</option>
-              <option>Thursday Fiesta</option>
-              <option>National Friday Bonanza</option>
-              <option>National Weekly Lotto (Saturday)</option>
+            <select 
+              value={selectedDraw} 
+              onChange={(e) => setSelectedDraw(e.target.value)}
+              className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white text-sm font-semibold focus:outline-none focus:border-amber-400 transition-all"
+            >
+              <option value="NLA VAG THURSDAY">NLA VAG Thursday - Closes in 04h 22m</option>
+              <option value="MONDAY SPECIAL">Monday Special Draw</option>
+              <option value="LUCKY TUESDAY">Lucky Tuesday Draw</option>
+              <option value="MIDWEEK DRAW">Midweek Draw</option>
+              <option value="THURSDAY FIESTA">Thursday Fiesta</option>
+              <option value="FRIDAY BONANZA">National Friday Bonanza</option>
+              <option value="NATIONAL SATURDAY">National Weekly Lotto (Saturday)</option>
             </select>
           </div>
 
@@ -252,30 +325,53 @@ export default function PlayArenaPage() {
 
         </div>
 
+        {/* Enhanced Bet Slip matching reference layout */}
         <div className="space-y-6">
-          <div className="bg-zinc-950/80 backdrop-blur-2xl border border-amber-500/30 rounded-3xl p-6 shadow-2xl relative sticky top-6">
+          <div className="bg-zinc-950/90 backdrop-blur-2xl border border-amber-500/40 rounded-3xl p-6 shadow-2xl relative sticky top-6 space-y-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-base font-black uppercase tracking-wider text-white">Bet Slip</h3>
               <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase tracking-widest">
                 {selectedGameType}
               </span>
             </div>
-            <p className="text-xs text-zinc-400 mb-6">Review your selections before placement.</p>
+            <p className="text-xs text-zinc-400">Review your selections before placement.</p>
 
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span>Selected Numbers:</span>
-                <span className="font-bold text-amber-400 text-right max-w-[180px] truncate">
-                  {selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'None'}
-                </span>
+            <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
+              <div className="flex justify-between text-zinc-300">
+                <span>Price:</span>
+                <span className="font-black text-amber-400">GH₵ {totalStake.toFixed(2)}</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span>Total Lines:</span>
-                <span className="font-bold text-amber-400">{totalLines}</span>
+              <div className="flex justify-between text-zinc-300">
+                <span>Minimum Win:</span>
+                <span className="font-black text-emerald-400">GH₵ {minWin.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Maximum Win:</span>
+                <span className="font-black text-emerald-400">GH₵ {maxWin.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>LINES:</span>
+                <span className="font-black text-white">{totalLines}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Game Type:</span>
+                <span className="font-black text-amber-400 uppercase">{selectedGameType}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Game:</span>
+                <span className="font-black text-white">{selectedDraw}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Closing Time:</span>
+                <span className="font-black text-white">9:55 AM</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Draw Date:</span>
+                <span className="font-black text-white">{new Date().toLocaleDateString()}</span>
               </div>
             </div>
 
-            <div className="space-y-3 mb-6">
+            <div className="space-y-2 pt-3 border-t border-zinc-900">
               <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Stake per Line (GH₵):</span>
               
               <div className="grid grid-cols-4 gap-2">
@@ -312,7 +408,7 @@ export default function PlayArenaPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-zinc-900 flex items-center justify-between mb-6">
+            <div className="pt-3 border-t border-zinc-900 flex items-center justify-between">
               <span className="text-xs uppercase font-bold text-zinc-400">Total Stake:</span>
               <span className="text-xl font-black text-amber-400">
                 GH₵ {totalStake.toFixed(2)}
@@ -331,28 +427,49 @@ export default function PlayArenaPage() {
 
       </div>
 
+      {/* Booking Code Result Modal */}
+      {isSearchModalOpen && searchedTicketResult && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-black text-white uppercase tracking-wider">Ticket Details</h3>
+              <button onClick={() => setIsSearchModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs text-zinc-300">
+              <div className="flex justify-between"><span>Booking Code:</span> <span className="font-bold text-amber-400">{searchedTicketResult.bookingCode}</span></div>
+              <div className="flex justify-between"><span>Game Type:</span> <span className="font-bold text-white">{searchedTicketResult.gameType}</span></div>
+              <div className="flex justify-between"><span>Selected Numbers:</span> <span className="font-bold text-amber-400">{searchedTicketResult.numbers.join(', ')}</span></div>
+              <div className="flex justify-between"><span>Total Lines:</span> <span className="font-bold text-white">{searchedTicketResult.lines}</span></div>
+              <div className="flex justify-between"><span>Total Stake:</span> <span className="font-bold text-amber-400">GH₵ {searchedTicketResult.total?.toFixed(2)}</span></div>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedGameType(searchedTicketResult.gameType);
+                setSelectedNumbers(searchedTicketResult.numbers);
+                setStakePerLine(searchedTicketResult.stakePerLine || 2);
+                setIsSearchModalOpen(false);
+              }}
+              className="w-full py-3 bg-amber-400 text-black font-black rounded-xl text-xs uppercase"
+            >
+              Load Into Slip
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-black text-white uppercase tracking-wider">Mobile Money Checkout</h3>
-              <button 
-                onClick={() => setIsPaymentModalOpen(false)}
-                className="text-zinc-400 hover:text-white font-bold"
-              >
-                ✕
-              </button>
+              <button onClick={() => setIsPaymentModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">✕</button>
             </div>
 
-            <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2">
-              <div className="flex justify-between text-xs text-zinc-400">
-                <span>Amount to Pay:</span>
-                <span className="font-bold text-amber-400 text-sm">GH₵ {totalStake.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-xs text-zinc-400">
-                <span>Game Slip:</span>
-                <span className="font-semibold text-white">{selectedGameType} ({totalLines} lines)</span>
-              </div>
+            <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
+              <div className="flex justify-between text-zinc-400"><span>Amount to Pay:</span> <span className="font-bold text-amber-400 text-sm">GH₵ {totalStake.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Game Slip:</span> <span className="font-semibold text-white">{selectedGameType} ({totalLines} lines)</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Potential Min Win:</span> <span className="font-semibold text-emerald-400">GH₵ {minWin.toFixed(2)}</span></div>
             </div>
 
             <div className="space-y-4">
@@ -365,9 +482,7 @@ export default function PlayArenaPage() {
                       type="button"
                       onClick={() => setMomoProvider(prov)}
                       className={`py-2 rounded-xl text-xs font-black border transition ${
-                        momoProvider === prov 
-                          ? 'bg-amber-400 border-amber-400 text-black shadow-md' 
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-300'
+                        momoProvider === prov ? 'bg-amber-400 border-amber-400 text-black shadow-md' : 'bg-zinc-900 border-zinc-800 text-zinc-300'
                       }`}
                     >
                       {prov}
