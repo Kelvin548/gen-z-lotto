@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'main'; // keeping standard imports
-import { useState as useReactState } from 'react';
+import { useState } from 'react';
 
 // Helper to calculate combinations (n choose r) for Perm games
 function calculateCombinations(n: number, r: number): number {
@@ -72,7 +71,6 @@ export default function PlayArenaPage() {
     }
   };
 
-  // Helper to get max allowed numbers based on game type
   const getMaxNumbers = (type: string) => {
     switch (type) {
       case 'Direct 1': return 1;
