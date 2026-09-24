@@ -414,7 +414,7 @@ export class BankerStrategy extends BaseGameStrategy {
         }
       }
     } else {
-      // Single-number banker mode matching frontend rules (1 banker number = 1 line)
+      // Single-number banker mode (1 banker number = 1 line, allowing custom user stakes)
       for (const banker of bankers) {
         lines.push([banker]);
       }
@@ -429,14 +429,8 @@ export class BankerStrategy extends BaseGameStrategy {
     errors.push(...stakeRes.errors);
 
     let potentialPayout: Pesewas | null = null;
-    if (config.multiplierConfig?.baseMultiplier) {
-      potentialPayout = Math.round(
-        totalLines * stakePesewas * config.multiplierConfig.baseMultiplier
-      );
-    } else {
-      // Default fixed payout for single banker (GH₵ 880.00 = 88000 pesewas)
-      potentialPayout = 88000;
-    }
+    const baseMultiplier = config.multiplierConfig?.baseMultiplier || 88; 
+    potentialPayout = Math.round(totalLines * stakePesewas * baseMultiplier);
 
     return {
       isValid: errors.length === 0,
