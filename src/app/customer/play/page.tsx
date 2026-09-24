@@ -103,12 +103,16 @@ export default function PlayArenaPage() {
   };
 
   const totalLines = calculateTotalLines();
-  const totalStake = selectedGameType === 'Banker' ? 89.00 : totalLines * stakePerLine;
+  // Banker now uses stakePerLine just like other games (1 line for Banker when 1 number is selected)
+  const totalStake = selectedGameType === 'Banker' ? (selectedNumbers.length === 1 ? stakePerLine : 0) : totalLines * stakePerLine;
 
   const getPotentialWins = () => {
     if (selectedGameType === 'Banker') {
       if (selectedNumbers.length !== 1) return { minWin: 0, maxWin: 0 };
-      return { minWin: 880.00, maxWin: 880.00 };
+      // Standard Banker win multiplier calculation or custom payout
+      const bankerMultiplier = 88; // e.g. based on 880 win for 10 stake or calculated dynamically
+      const winVal = stakePerLine * 88; 
+      return { minWin: winVal, maxWin: winVal };
     }
 
     if (totalLines <= 0) return { minWin: 0, maxWin: 0 };
@@ -131,10 +135,6 @@ export default function PlayArenaPage() {
   const handleGameTypeChange = (type: string) => {
     setSelectedGameType(type);
     setSelectedNumbers([]); 
-    if (type === 'Banker') {
-      setStakePerLine(89);
-      setCustomStakeInput('89');
-    }
   };
 
   const toggleNumber = (num: number) => {
@@ -153,13 +153,11 @@ export default function PlayArenaPage() {
   };
 
   const handlePresetSelect = (amount: number) => {
-    if (selectedGameType === 'Banker') return;
     setStakePerLine(amount);
     setCustomStakeInput(amount.toString());
   };
 
   const handleCustomStakeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (selectedGameType === 'Banker') return;
     const val = e.target.value;
     setCustomStakeInput(val);
     const parsed = parseFloat(val);
@@ -234,7 +232,7 @@ export default function PlayArenaPage() {
         gameType: selectedGameType,
         gameName: selectedDraw,
         numbers: selectedNumbers,
-        stakePerLine: selectedGameType === 'Banker' ? 89 : stakePerLine,
+        stakePerLine: stakePerLine,
         lines: selectedGameType === 'Banker' ? 1 : totalLines,
         total: totalStake,
         minWin: minWin,
@@ -422,11 +420,10 @@ export default function PlayArenaPage() {
                     <button
                       key={amount}
                       onClick={() => handlePresetSelect(amount)}
-                      disabled={selectedGameType === 'Banker'}
                       className={`py-2 rounded-xl text-xs font-black transition-all border ${
-                        isSelected && selectedGameType !== 'Banker'
+                        isSelected
                           ? 'bg-amber-400 border-amber-400 text-black shadow-md shadow-amber-400/20'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40 disabled:opacity-40'
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40'
                       }`}
                     >
                       {amount}
@@ -441,11 +438,10 @@ export default function PlayArenaPage() {
                   <input
                     type="number"
                     min="1"
-                    disabled={selectedGameType === 'Banker'}
                     placeholder="Enter custom amount..."
                     value={customStakeInput}
                     onChange={handleCustomStakeChange}
-                    className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 py-3 pl-14 pr-4 text-white text-xs font-bold focus:outline-none focus:border-amber-400 transition-all disabled:opacity-40"
+                    className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 py-3 pl-14 pr-4 text-white text-xs font-bold focus:outline-none focus:border-amber-400 transition-all"
                   />
                 </div>
               </div>
