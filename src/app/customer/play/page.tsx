@@ -16,7 +16,7 @@ function calculateCombinations(n: number, r: number): number {
 
 export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
-  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([7, 14, 16, 25]);
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [stakePerLine, setStakePerLine] = useState<number>(5);
   const [customStakeInput, setCustomStakeInput] = useState<string>('5');
   const [selectedDraw, setSelectedDraw] = useState('NLA VAG THURSDAY');
@@ -76,8 +76,10 @@ export default function PlayArenaPage() {
   const totalLines = calculateTotalLines();
   const totalStake = totalLines * stakePerLine;
 
-  // Potential Wins Calculation
+  // Potential Wins Calculation (Resets to 0 if no valid lines are selected)
   const getPotentialWins = () => {
+    if (totalLines <= 0) return { minWin: 0, maxWin: 0 };
+
     let baseMultiplier = 240;
     if (selectedGameType === 'Direct 1') baseMultiplier = 10;
     if (selectedGameType === 'Direct 2' || selectedGameType === 'Banker') baseMultiplier = 240;
