@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 describe('PHASE 5 E2E Lifecycle — Customer to Draw Settlement', () => {
   let userId: string;
   let adminUserId: string;
-  let userPhone = '0241234567';
+  let userPhone = `024${Date.now().toString().slice(-7)}`; // Made dynamic to prevent collisions
   let userWalletId: string;
   let gameId: string;
   let gameTypeId: string;
@@ -34,12 +34,13 @@ describe('PHASE 5 E2E Lifecycle — Customer to Draw Settlement', () => {
       prisma.wallet.deleteMany(),
       prisma.userProfile.deleteMany(),
       prisma.user.deleteMany(),
+      prisma.adminUser.deleteMany(), // <-- ADDED: Clear AdminUser table
     ]);
 
     // Create Admin User directly via Prisma
     const adminUser = await prisma.user.create({
       data: {
-        phoneNumber: '0240000000',
+        phoneNumber: `0240${Date.now().toString().slice(-6)}`, // Dynamic
         passwordHash: 'hashed_admin_password',
         termsAcceptedAt: new Date(),
         privacyAcceptedAt: new Date(),
@@ -197,7 +198,7 @@ describe('PHASE 5 E2E Lifecycle — Customer to Draw Settlement', () => {
       create: {
         id: adminUserId,
         name: 'System Admin',
-        email: `admin_${Date.now()}@example.com`,
+        phoneNumber: `+23320${Date.now().toString().slice(-7)}`, // <-- dynamic phone bypasses constraints
         passwordHash: 'hashed_admin_user_password',
       },
     });

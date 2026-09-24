@@ -470,6 +470,7 @@ model SelfExclusion {
 model SystemSetting {
   key         String   @id
   value       String
+  
   description String?
   updatedAt   DateTime @updatedAt @map("updated_at")
 

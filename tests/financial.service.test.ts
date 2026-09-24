@@ -9,10 +9,12 @@ describe('Phase 5 Financial Engine - Ledger & Wallet Service Integration Tests',
   let testWalletId: string;
 
   beforeAll(async () => {
+    // Clean up any stale records first
     await prisma.user.deleteMany({
       where: { phoneNumber: '+233999999999' },
     });
 
+    // Atomically create user and wallet to prevent race conditions & foreign key delays
     const testUser = await prisma.user.create({
       data: {
         phoneNumber: '+233999999999',

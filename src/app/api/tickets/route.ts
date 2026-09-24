@@ -9,13 +9,29 @@ export async function POST(
   _context?: { params?: Promise<Record<string, string>> }
 ) {
   try {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, errors: ["Invalid JSON payload."] },
+        { status: 400 }
+      );
+    }
+
     const auth = await requireAuth();
+    if (!auth || !auth.authorized) {
+      return NextResponse.json(
+        { success: false, errors: ["Unauthorized."] },
+        { status: 401 }
+      );
+    }
+
     let userId: string;
 
-    if (!auth.authorized || !auth.user?.id || auth.user.id === 'f3a3db28-b555-46f6-a099-f18ffdd1c371') {
-      // Fallback to the seeded demo user with a funded wallet
-      const demoUser = await prisma.user.findFirst({
-        where: { phoneNumber: '+233000000000' },
+    if (!auth.user?.id || auth.user.id === 'f3a3db28-b555-46f6-a099-f18ffdd1c371') {
+      const demoUser = await prisma.user.findUnique({
+        where: { id: auth.user?.id || 'f3a3db28-b555-46f6-a099-f18ffdd1c371' },
       });
       if (!demoUser) {
         return NextResponse.json(
@@ -28,7 +44,6 @@ export async function POST(
       userId = auth.user.id;
     }
 
-    const body = await request.json();
     const {
       drawId,
       gameTypeCode,
