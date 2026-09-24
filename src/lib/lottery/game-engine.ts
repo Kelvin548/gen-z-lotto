@@ -9,7 +9,7 @@ export const LOTTO_CONSTANTS = {
   MAX_NUMBER: 90,
   DEFAULT_CURRENCY: "GHS",
   TIMEZONE: "Africa/Accra",
-  MAX_SELECTION_CAP: 25, // Updated to 25 for Perm games
+  MAX_SELECTION_CAP: 25, // Updated to 25 to support Perm games
   MAX_LINES_PER_BET: 5000,
 };
 
@@ -394,26 +394,29 @@ export class BankerStrategy extends BaseGameStrategy {
     const mainSet = (selections.secondaryNumbers || []).sort((a, b) => a - b);
 
     errors.push(...this.validateNumberRange(bankers));
-    errors.push(...this.validateNumberRange(mainSet));
 
     if (bankers.length === 0) {
       errors.push("Banker strategy requires at least one Banker number.");
     }
-    if (mainSet.length === 0) {
-      errors.push("Banker strategy requires main selection numbers.");
-    }
-
-    const overlap = bankers.filter((b) => mainSet.includes(b));
-    if (overlap.length > 0) {
-      errors.push(
-        `Banker numbers and main numbers cannot overlap. Overlapping: ${overlap.map(formatLottoNumber).join(", ")}.`
-      );
-    }
 
     const lines: number[][] = [];
-    for (const banker of bankers) {
-      for (const mainNum of mainSet) {
-        lines.push([banker, mainNum].sort((a, b) => a - b));
+    if (mainSet.length > 0) {
+      errors.push(...this.validateNumberRange(mainSet));
+      const overlap = bankers.filter((b) => mainSet.includes(b));
+      if (overlap.length > 0) {
+        errors.push(
+          `Banker numbers and main numbers cannot overlap. Overlapping: ${overlap.map(formatLottoNumber).join(", ")}.`
+        );
+      }
+      for (const banker of bankers) {
+        for (const mainNum of mainSet) {
+          lines.push([banker, mainNum].sort((a, b) => a - b));
+        }
+      }
+    } else {
+      // Single-number banker mode matching frontend rules (1 banker number = 1 line)
+      for (const banker of bankers) {
+        lines.push([banker]);
       }
     }
 
@@ -430,6 +433,9 @@ export class BankerStrategy extends BaseGameStrategy {
       potentialPayout = Math.round(
         totalLines * stakePesewas * config.multiplierConfig.baseMultiplier
       );
+    } else {
+      // Default fixed payout for single banker (GH₵ 880.00 = 88000 pesewas)
+      potentialPayout = 88000;
     }
 
     return {
