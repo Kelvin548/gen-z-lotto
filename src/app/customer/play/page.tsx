@@ -74,16 +74,23 @@ export default function PlayArenaPage() {
   };
 
   const totalLines = calculateTotalLines();
-  const totalStake = totalLines * stakePerLine;
+  
+  // If Banker is selected, force total stake price to GH₵ 89.00
+  const totalStake = selectedGameType === 'Banker' ? 89.00 : totalLines * stakePerLine;
 
-  // Potential Wins Calculation (Resets to 0 if no valid lines are selected)
+  // Potential Wins Calculation
   const getPotentialWins = () => {
+    if (selectedGameType === 'Banker') {
+      if (selectedNumbers.length !== 1) return { minWin: 0, maxWin: 0 };
+      // Banker fixed win: GH₵ 880.00
+      return { minWin: 880.00, maxWin: 880.00 };
+    }
+
     if (totalLines <= 0) return { minWin: 0, maxWin: 0 };
 
     let baseMultiplier = 240;
     if (selectedGameType === 'Direct 1') baseMultiplier = 10;
     if (selectedGameType === 'Direct 2') baseMultiplier = 240;
-    if (selectedGameType === 'Banker') baseMultiplier = 89; // Banker multiplier set to 89
     if (selectedGameType === 'Direct 3' || selectedGameType === 'Perm 3') baseMultiplier = 2100;
     if (selectedGameType === 'Direct 4') baseMultiplier = 6000;
     if (selectedGameType === 'Direct 5') baseMultiplier = 44000;
@@ -99,6 +106,10 @@ export default function PlayArenaPage() {
   const handleGameTypeChange = (type: string) => {
     setSelectedGameType(type);
     setSelectedNumbers([]); 
+    if (type === 'Banker') {
+      setStakePerLine(89);
+      setCustomStakeInput('89');
+    }
   };
 
   const toggleNumber = (num: number) => {
@@ -118,11 +129,13 @@ export default function PlayArenaPage() {
   };
 
   const handlePresetSelect = (amount: number) => {
+    if (selectedGameType === 'Banker') return; // Banker has fixed price of 89
     setStakePerLine(amount);
     setCustomStakeInput(amount.toString());
   };
 
   const handleCustomStakeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (selectedGameType === 'Banker') return; // Banker has fixed price of 89
     const val = e.target.value;
     setCustomStakeInput(val);
     const parsed = parseFloat(val);
@@ -163,11 +176,11 @@ export default function PlayArenaPage() {
       return;
     }
 
-    if (totalLines <= 0) {
+    if (selectedGameType !== 'Banker' && totalLines <= 0) {
       alert('Invalid selection for this game type.');
       return;
     }
-    if (stakePerLine <= 0) {
+    if (totalStake <= 0) {
       alert('Please enter a valid stake amount.');
       return;
     }
@@ -197,8 +210,8 @@ export default function PlayArenaPage() {
         gameType: selectedGameType,
         gameName: selectedDraw,
         numbers: selectedNumbers,
-        stakePerLine: stakePerLine,
-        lines: totalLines,
+        stakePerLine: selectedGameType === 'Banker' ? 89 : stakePerLine,
+        lines: selectedGameType === 'Banker' ? 1 : totalLines,
         total: totalStake,
         minWin: minWin,
         maxWin: maxWin,
@@ -357,7 +370,7 @@ export default function PlayArenaPage() {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
-                <span className="font-black text-white">{totalLines}</span>
+                <span className="font-black text-white">{selectedGameType === 'Banker' ? 1 : totalLines}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game Type:</span>
@@ -387,10 +400,11 @@ export default function PlayArenaPage() {
                     <button
                       key={amount}
                       onClick={() => handlePresetSelect(amount)}
+                      disabled={selectedGameType === 'Banker'}
                       className={`py-2 rounded-xl text-xs font-black transition-all border ${
-                        isSelected
+                        isSelected && selectedGameType !== 'Banker'
                           ? 'bg-amber-400 border-amber-400 text-black shadow-md shadow-amber-400/20'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40'
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40 disabled:opacity-40'
                       }`}
                     >
                       {amount}
@@ -405,10 +419,11 @@ export default function PlayArenaPage() {
                   <input
                     type="number"
                     min="1"
+                    disabled={selectedGameType === 'Banker'}
                     placeholder="Enter custom amount..."
                     value={customStakeInput}
                     onChange={handleCustomStakeChange}
-                    className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 py-3 pl-14 pr-4 text-white text-xs font-bold focus:outline-none focus:border-amber-400 transition-all"
+                    className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 py-3 pl-14 pr-4 text-white text-xs font-bold focus:outline-none focus:border-amber-400 transition-all disabled:opacity-40"
                   />
                 </div>
               </div>
@@ -423,7 +438,7 @@ export default function PlayArenaPage() {
 
             <button
               onClick={handleOpenPaymentModal}
-              disabled={selectedNumbers.length === 0 || totalLines <= 0 || stakePerLine <= 0}
+              disabled={(selectedNumbers.length === 0) || (selectedGameType !== 'Banker' && totalLines <= 0) || totalStake <= 0}
               className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all active:scale-[0.98]"
             >
               Confirm & Place Bet
@@ -474,7 +489,7 @@ export default function PlayArenaPage() {
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
               <div className="flex justify-between text-zinc-400"><span>Amount to Pay:</span> <span className="font-bold text-amber-400 text-sm">GH₵ {totalStake.toFixed(2)}</span></div>
-              <div className="flex justify-between text-zinc-400"><span>Game Slip:</span> <span className="font-semibold text-white">{selectedGameType} ({totalLines} lines)</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Game Slip:</span> <span className="font-semibold text-white">{selectedGameType}</span></div>
               <div className="flex justify-between text-zinc-400"><span>Potential Min Win:</span> <span className="font-semibold text-emerald-400">GH₵ {minWin.toFixed(2)}</span></div>
             </div>
 
