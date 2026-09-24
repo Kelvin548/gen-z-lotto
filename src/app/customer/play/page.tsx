@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState } from 'main'; // keeping standard imports
+import { useState as useReactState } from 'react';
 
 // Helper to calculate combinations (n choose r) for Perm games
 function calculateCombinations(n: number, r: number): number {
@@ -14,12 +15,35 @@ function calculateCombinations(n: number, r: number): number {
   return numerator / denominator;
 }
 
+const drawsList = [
+  { name: 'NLA VAG Monday', closingTime: '9:30 AM' },
+  { name: 'Moon Rush Monday', closingTime: '1:00 PM' },
+  { name: 'Monday Special', closingTime: '7:30 PM' },
+  { name: 'NLA VAG Tuesday', closingTime: '9:30 AM' },
+  { name: 'Moon Rush Tuesday', closingTime: '1:00 PM' },
+  { name: 'Lucky Tuesday', closingTime: '7:30 PM' },
+  { name: 'NLA VAG Wednesday', closingTime: '9:30 AM' },
+  { name: 'Moon Rush Wednesday', closingTime: '1:00 PM' },
+  { name: 'Midweek', closingTime: '7:30 PM' },
+  { name: 'NLA VAG Thursday', closingTime: '9:30 AM' },
+  { name: 'Moon Rush Thursday', closingTime: '1:00 PM' },
+  { name: 'Fortune Thursday', closingTime: '7:30 PM' },
+  { name: 'NLA VAG Friday', closingTime: '9:30 AM' },
+  { name: 'Moon Rush Friday', closingTime: '1:00 PM' },
+  { name: 'Friday Bonanza', closingTime: '7:30 PM' },
+  { name: 'NLA VAG Saturday', closingTime: '9:30 AM' },
+  { name: 'Moon Rush Saturday', closingTime: '1:00 PM' },
+  { name: 'National', closingTime: '7:30 PM' },
+  { name: 'Aseda Sunday', closingTime: '5:30 PM' }
+];
+
 export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [stakePerLine, setStakePerLine] = useState<number>(5);
   const [customStakeInput, setCustomStakeInput] = useState<string>('5');
-  const [selectedDraw, setSelectedDraw] = useState('NLA VAG THURSDAY');
+  const [selectedDraw, setSelectedDraw] = useState('NLA VAG Thursday');
+  const [closingTime, setClosingTime] = useState('9:30 AM');
 
   // Booking Code Search States
   const [searchBookingCode, setSearchBookingCode] = useState('');
@@ -39,6 +63,15 @@ export default function PlayArenaPage() {
 
   const stakeOptions = [1, 2, 5, 10];
 
+  const handleDrawChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const drawName = e.target.value;
+    setSelectedDraw(drawName);
+    const found = drawsList.find(d => d.name === drawName);
+    if (found) {
+      setClosingTime(found.closingTime);
+    }
+  };
+
   // Helper to get max allowed numbers based on game type
   const getMaxNumbers = (type: string) => {
     switch (type) {
@@ -48,13 +81,12 @@ export default function PlayArenaPage() {
       case 'Direct 4': return 4;
       case 'Direct 5': return 5;
       case 'Perm 2':
-      case 'Perm 3': return 25; // Perm games allow up to 25 numbers
-      case 'Banker': return 1;  // Banker strictly allows only 1 number
+      case 'Perm 3': return 25; 
+      case 'Banker': return 1;  
       default: return 10;
     }
   };
 
-  // Helper to get required selection size (r) for combination calculations
   const getRequiredSelectionSize = (type: string) => {
     switch (type) {
       case 'Perm 2': return 2;
@@ -63,7 +95,6 @@ export default function PlayArenaPage() {
     }
   };
 
-  // Calculate lines dynamically
   const calculateTotalLines = () => {
     if (selectedGameType.startsWith('Perm')) {
       const r = getRequiredSelectionSize(selectedGameType);
@@ -74,15 +105,11 @@ export default function PlayArenaPage() {
   };
 
   const totalLines = calculateTotalLines();
-  
-  // If Banker is selected, force total stake price to GH₵ 89.00
   const totalStake = selectedGameType === 'Banker' ? 89.00 : totalLines * stakePerLine;
 
-  // Potential Wins Calculation
   const getPotentialWins = () => {
     if (selectedGameType === 'Banker') {
       if (selectedNumbers.length !== 1) return { minWin: 0, maxWin: 0 };
-      // Banker fixed win: GH₵ 880.00
       return { minWin: 880.00, maxWin: 880.00 };
     }
 
@@ -118,7 +145,6 @@ export default function PlayArenaPage() {
       setSelectedNumbers(selectedNumbers.filter((n) => n !== num));
     } else {
       if (maxAllowed === 1) {
-        // For Banker or Direct 1, selecting a new number replaces the old one
         setSelectedNumbers([num]);
       } else if (selectedNumbers.length < maxAllowed) {
         setSelectedNumbers([...selectedNumbers, num].sort((a, b) => a - b));
@@ -129,13 +155,13 @@ export default function PlayArenaPage() {
   };
 
   const handlePresetSelect = (amount: number) => {
-    if (selectedGameType === 'Banker') return; // Banker has fixed price of 89
+    if (selectedGameType === 'Banker') return;
     setStakePerLine(amount);
     setCustomStakeInput(amount.toString());
   };
 
   const handleCustomStakeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (selectedGameType === 'Banker') return; // Banker has fixed price of 89
+    if (selectedGameType === 'Banker') return;
     const val = e.target.value;
     setCustomStakeInput(val);
     const parsed = parseFloat(val);
@@ -216,7 +242,7 @@ export default function PlayArenaPage() {
         minWin: minWin,
         maxWin: maxWin,
         date: new Date().toLocaleDateString(),
-        closingTime: '9:55 AM',
+        closingTime: closingTime,
         status: 'Active',
         paymentMethod: `${momoProvider} Momo (${momoNumber})`
       };
@@ -275,16 +301,14 @@ export default function PlayArenaPage() {
             </h3>
             <select 
               value={selectedDraw} 
-              onChange={(e) => setSelectedDraw(e.target.value)}
+              onChange={handleDrawChange}
               className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white text-sm font-semibold focus:outline-none focus:border-amber-400 transition-all"
             >
-              <option value="NLA VAG THURSDAY">NLA VAG Thursday - Closes in 04h 22m</option>
-              <option value="MONDAY SPECIAL">Monday Special Draw</option>
-              <option value="LUCKY TUESDAY">Lucky Tuesday Draw</option>
-              <option value="MIDWEEK DRAW">Midweek Draw</option>
-              <option value="THURSDAY FIESTA">Thursday Fiesta</option>
-              <option value="FRIDAY BONANZA">National Friday Bonanza</option>
-              <option value="NATIONAL SATURDAY">National Weekly Lotto (Saturday)</option>
+              {drawsList.map((draw) => (
+                <option key={draw.name} value={draw.name}>
+                  {draw.name} — Closes at {draw.closingTime}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -382,7 +406,7 @@ export default function PlayArenaPage() {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Closing Time:</span>
-                <span className="font-black text-white">9:55 AM</span>
+                <span className="font-black text-white">{closingTime}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Draw Date:</span>
