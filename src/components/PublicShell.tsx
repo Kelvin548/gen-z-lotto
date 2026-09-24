@@ -19,6 +19,9 @@ export default function PublicShell({ children }: { children: React.ReactNode })
           <Link href="/customer/play" className="text-sm font-semibold px-5 py-2.5 rounded-xl gold-gradient-bg text-obsidian hover:opacity-90 transition shadow-lg shadow-yellow-500/20">
             Play Now
           </Link>
+          <Link href="/admin/dashboard" className="text-xs font-semibold px-3 py-2 rounded-xl bg-zinc-900 border border-yellow-500/20 text-yellow-400 hover:bg-zinc-800 transition">
+            Admin
+          </Link>
         </div>
       </header>
 
