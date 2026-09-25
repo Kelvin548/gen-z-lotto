@@ -40,7 +40,7 @@ export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
-  // Set 89 Cedis as the constant/default stake per line
+  // Corrected state variables with matching setters
   const [stakePerLine, setStakePerLine] = useState<number>(89);
   const [customStakeInput, setCustomStakeInput] = useState<string>('89');
 
@@ -82,7 +82,7 @@ export default function PlayArenaPage() {
       case 'Direct 4': return 4;
       case 'Direct 5': return 5;
       case 'Perm 2': return 25; 
-      case 'Perm 3': return 10; // Restricted to maximum 10 numbers for Perm 3
+      case 'Perm 3': return 10; 
       case 'Banker': return 1;  
       default: return 10;
     }
