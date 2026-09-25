@@ -217,11 +217,33 @@ export default function PlayArenaPage() {
 
     setIsProcessing(true);
 
-    setTimeout(() => {
+    try {
+      // Convert GHS totalStake to pesewas (multiply by 100)
+      const amountPesewas = Math.round(totalStake * 100);
+      const currentUser = localStorage.getItem('active_username') || 'customer_user';
+
+      const response = await fetch('/api/wallet/deposit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: `${currentUser}@genzlotto.com`,
+          amountPesewas: amountPesewas,
+          userId: currentUser,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Payment initialization failed.');
+      }
+
       setIsProcessing(false);
       setIsPaymentModalOpen(false);
 
-      const currentUser = localStorage.getItem('active_username') || 'customer_user';
+      // Save local ticket record before redirecting/completing
       const storageKey = `user_tickets_${currentUser}`;
       const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -249,9 +271,16 @@ export default function PlayArenaPage() {
       const masterLedger = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
       localStorage.setItem('admin_all_tickets', JSON.stringify([newTicket, ...masterLedger]));
 
-      alert(`Payment successful! Your Booking Code is: ${bookingCode}`);
-      window.location.href = '/customer/tickets';
-    }, 2500);
+      if (data.authorizationUrl) {
+        window.location.href = data.authorizationUrl;
+      } else {
+        alert(`Payment prompt initialized! Your Booking Code is: ${bookingCode}`);
+        window.location.href = '/customer/tickets';
+      }
+    } catch (error: any) {
+      setIsProcessing(false);
+      alert(error.message || 'An error occurred during payment processing.');
+    }
   };
 
   return (
@@ -549,7 +578,7 @@ export default function PlayArenaPage() {
                 {isProcessing ? (
                   <>
                     <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
-                    Approving Prompt on Phone...
+                    Initializing Paystack Prompt...
                   </>
                 ) : (
                   `Pay GH₵ ${totalStake.toFixed(2)} & Place Bet`
