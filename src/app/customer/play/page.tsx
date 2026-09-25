@@ -39,8 +39,11 @@ const drawsList = [
 export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-  const [stakePerLine, setStakePerLine] = useState<number>(5);
-  const [customStakeInput, setCustomStakeInput] = useState<string>('5');
+  
+  // Set 89 Cedis as the constant/default stake per line
+  const [stakePerLine, setStakePerLine] = useState<number>(89);
+  const [customStakeInput, setCustomStakeInput] = useState<string>('89');
+
   const [selectedDraw, setSelectedDraw] = useState('NLA VAG Thursday');
   const [closingTime, setClosingTime] = useState('9:30 AM');
 
@@ -60,7 +63,7 @@ export default function PlayArenaPage() {
     'Direct 5', 'Perm 2', 'Perm 3', 'Banker'
   ];
 
-  const stakeOptions = [1, 2, 5, 10];
+  const stakeOptions = [10, 20, 50, 89];
 
   const handleDrawChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const drawName = e.target.value;
@@ -78,8 +81,8 @@ export default function PlayArenaPage() {
       case 'Direct 3': return 3;
       case 'Direct 4': return 4;
       case 'Direct 5': return 5;
-      case 'Perm 2':
-      case 'Perm 3': return 25; 
+      case 'Perm 2': return 25; 
+      case 'Perm 3': return 10; // Restricted to maximum 10 numbers for Perm 3
       case 'Banker': return 1;  
       default: return 10;
     }
@@ -103,14 +106,11 @@ export default function PlayArenaPage() {
   };
 
   const totalLines = calculateTotalLines();
-  // Banker now uses stakePerLine just like other games (1 line for Banker when 1 number is selected)
   const totalStake = selectedGameType === 'Banker' ? (selectedNumbers.length === 1 ? stakePerLine : 0) : totalLines * stakePerLine;
 
   const getPotentialWins = () => {
     if (selectedGameType === 'Banker') {
       if (selectedNumbers.length !== 1) return { minWin: 0, maxWin: 0 };
-      // Standard Banker win multiplier calculation or custom payout
-      const bankerMultiplier = 88; // e.g. based on 880 win for 10 stake or calculated dynamically
       const winVal = stakePerLine * 88; 
       return { minWin: winVal, maxWin: winVal };
     }
@@ -193,8 +193,8 @@ export default function PlayArenaPage() {
     } else if (selectedGameType === 'Perm 2' && selectedNumbers.length < 2) {
       alert('Perm 2 requires at least 2 numbers selected.');
       return;
-    } else if (selectedGameType === 'Perm 3' && selectedNumbers.length < 3) {
-      alert('Perm 3 requires at least 3 numbers selected.');
+    } else if (selectedGameType === 'Perm 3' && (selectedNumbers.length < 3 || selectedNumbers.length > 10)) {
+      alert('Perm 3 requires between 3 and 10 numbers selected.');
       return;
     }
 
@@ -364,7 +364,7 @@ export default function PlayArenaPage() {
 
         </div>
 
-        {/* Enhanced Bet Slip matching reference layout */}
+        {/* Enhanced Bet Slip */}
         <div className="space-y-6">
           <div className="bg-zinc-950/90 backdrop-blur-2xl border border-amber-500/40 rounded-3xl p-6 shadow-2xl relative sticky top-6 space-y-4">
             <div className="flex items-center justify-between mb-2">
@@ -485,7 +485,7 @@ export default function PlayArenaPage() {
               onClick={() => {
                 setSelectedGameType(searchedTicketResult.gameType);
                 setSelectedNumbers(searchedTicketResult.numbers);
-                setStakePerLine(searchedTicketResult.stakePerLine || 2);
+                setStakePerLine(searchedTicketResult.stakePerLine || 89);
                 setIsSearchModalOpen(false);
               }}
               className="w-full py-3 bg-amber-400 text-black font-black rounded-xl text-xs uppercase"

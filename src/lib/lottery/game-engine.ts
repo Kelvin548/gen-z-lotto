@@ -9,8 +9,9 @@ export const LOTTO_CONSTANTS = {
   MAX_NUMBER: 90,
   DEFAULT_CURRENCY: "GHS",
   TIMEZONE: "Africa/Accra",
-  MAX_SELECTION_CAP: 25, // Updated to 25 to support Perm games
+  MAX_SELECTION_CAP: 25,
   MAX_LINES_PER_BET: 5000,
+  BANKER_CONSTANT_STAKE_GHS: 89, // 89 Cedis constant stake reference
 };
 
 export type Pesewas = number;
@@ -333,9 +334,11 @@ export class Perm3Strategy extends BaseGameStrategy {
     const errors: string[] = [];
     const primary = (selections.primaryNumbers || []).sort((a, b) => a - b);
 
-    if (primary.length > LOTTO_CONSTANTS.MAX_SELECTION_CAP) {
+    // RESTRICTION: Perm 3 can select a maximum of 10 numbers only
+    const MAX_PERM3_SELECTIONS = 10;
+    if (primary.length > MAX_PERM3_SELECTIONS) {
       errors.push(
-        `Selection cap exceeded. Maximum allowed selection count is ${LOTTO_CONSTANTS.MAX_SELECTION_CAP}.`
+        `Perm 3 allows a maximum of ${MAX_PERM3_SELECTIONS} numbers. Selected: ${primary.length}.`
       );
     }
 
@@ -414,7 +417,6 @@ export class BankerStrategy extends BaseGameStrategy {
         }
       }
     } else {
-      // Single-number banker mode (1 banker number = 1 line, allowing custom user stakes)
       for (const banker of bankers) {
         lines.push([banker]);
       }
@@ -589,7 +591,7 @@ export const ValidateBetSlipSchema = z.object({
   gameId: z.string().uuid(),
   drawId: z.string().uuid(),
   gameTypeCode: z.nativeEnum(GameTypeCode),
-  primaryNumbers: z.array(z.number().int().min(1).max(90)).min(1).max(25), // Updated to max 25
+  primaryNumbers: z.array(z.number().int().min(1).max(90)).min(1).max(25),
   secondaryNumbers: z.array(z.number().int().min(1).max(90)).optional(),
   stakePesewas: z.number().int().positive(),
   idempotencyKey: z.string().min(16).max(64).optional(),
