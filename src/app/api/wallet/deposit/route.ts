@@ -1,3 +1,4 @@
+// src/app/api/wallet/deposit/route.ts
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/rbac";
 import crypto from "crypto";
@@ -144,15 +145,17 @@ export async function POST(request: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    if (error.message === "WALLET_NOT_FOUND") {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "";
+
+    if (errorMessage === "WALLET_NOT_FOUND") {
       return NextResponse.json(
         { success: false, errors: ["Wallet record not found for user."] },
         { status: 404 }
       );
     }
 
-    if (error.message === "WALLET_SUSPENDED") {
+    if (errorMessage === "WALLET_SUSPENDED") {
       return NextResponse.json(
         { success: false, errors: ["Wallet is suspended or frozen. Demo deposits are restricted."] },
         { status: 403 }
