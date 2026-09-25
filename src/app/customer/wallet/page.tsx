@@ -1,54 +1,62 @@
-// src/app/api/wallet/deposit/route.ts
-import { NextResponse } from "next/server";
+'use client';
 
-export async function POST(request: Request) {
-  try {
-    const { email, amountPesewas, userId } = await request.json();
+import { useState } from 'react';
 
-    if (!email || !amountPesewas || !userId || amountPesewas <= 0) {
-      return NextResponse.json(
-        { success: false, message: "Invalid payload, missing email, userId, or amount." },
-        { status: 400 }
-      );
+export default function CustomerWalletPage() {
+  const [balance, setBalance] = useState<number>(150.00);
+  const [topUpAmount, setTopUpAmount] = useState<string>('');
+
+  const handleTopUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(topUpAmount);
+    if (!isNaN(val) && val > 0) {
+      setBalance(prev => prev + val);
+      setTopUpAmount('');
+      alert(`Successfully added GH₵ ${val.toFixed(2)} to your wallet!`);
+    } else {
+      alert('Please enter a valid top-up amount.');
     }
+  };
 
-    // Initialize transaction with Paystack
-    const response = await fetch("https://api.paystack.co/transaction/initialize", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        amount: amountPesewas, // Amount in pesewas
-        currency: "GHS",
-        channels: ["card", "mobile_money"],
-        metadata: {
-          userId, // Crucial for your webhook to credit the right user wallet
-        },
-      }),
-    });
+  return (
+    <div className="space-y-6 relative z-10 max-w-4xl mx-auto">
+      <div>
+        <h2 className="text-3xl font-black tracking-tight text-white mb-1">My Wallet</h2>
+        <p className="text-xs text-zinc-400">Manage your account balance and fund your gameplay.</p>
+      </div>
 
-    const data = await response.json();
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-zinc-950/80 backdrop-blur-xl border border-amber-500/40 rounded-3xl p-6 shadow-xl space-y-4">
+          <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Current Balance</span>
+          <div className="text-4xl font-black text-white">
+            GH₵ {balance.toFixed(2)}
+          </div>
+          <p className="text-[11px] text-zinc-400">Available for instant stake placements and withdrawals.</p>
+        </div>
 
-    if (!data.status) {
-      return NextResponse.json(
-        { success: false, message: data.message || "Payment initialization failed." },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      authorizationUrl: data.data.authorization_url,
-      reference: data.data.reference,
-    });
-  } catch (error: any) {
-    console.error("Deposit initialization error:", error);
-    return NextResponse.json(
-      { success: false, message: error.message || "Internal server error." },
-      { status: 500 }
-    );
-  }
+        <div className="bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-4">
+          <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Fund Wallet</span>
+          <form onSubmit={handleTopUp} className="space-y-3">
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">GH₵</span>
+              <input
+                type="number"
+                min="1"
+                placeholder="Enter amount..."
+                value={topUpAmount}
+                onChange={(e) => setTopUpAmount(e.target.value)}
+                className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 py-3 pl-14 pr-4 text-white text-xs font-bold focus:outline-none focus:border-amber-400 transition-all"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-3.5 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 transition-all"
+            >
+              Proceed to Top-Up
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 }
