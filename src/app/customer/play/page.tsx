@@ -185,6 +185,10 @@ export default function PlayArenaPage() {
     }
   };
 
+  const clearSelectedNumbers = () => {
+    setSelectedNumbers([]);
+  };
+
   const handlePresetSelect = (amount: number) => {
     setStakePerLine(amount);
     setCustomStakeInput(amount.toString());
@@ -302,6 +306,9 @@ export default function PlayArenaPage() {
       const masterLedger = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
       localStorage.setItem('admin_all_tickets', JSON.stringify([newTicket, ...masterLedger]));
 
+      // Clear selections after successful placement
+      setSelectedNumbers([]);
+
       if (data.authorizationUrl) {
         window.location.href = data.authorizationUrl;
       } else {
@@ -397,9 +404,19 @@ export default function PlayArenaPage() {
               <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
                 3. Select Numbers (1 to 90) — Max: {getMaxNumbers(selectedGameType)}
               </h3>
-              <span className="text-xs text-zinc-400 font-semibold">
-                Selected: <strong className="text-amber-400">{selectedNumbers.length}</strong> / {getMaxNumbers(selectedGameType)}
-              </span>
+              <div className="flex items-center gap-3">
+                {selectedNumbers.length > 0 && (
+                  <button
+                    onClick={clearSelectedNumbers}
+                    className="text-[11px] text-red-400 hover:text-red-300 font-bold uppercase transition"
+                  >
+                    Clear
+                  </button>
+                )}
+                <span className="text-xs text-zinc-400 font-semibold">
+                  Selected: <strong className="text-amber-400">{selectedNumbers.length}</strong> / {getMaxNumbers(selectedGameType)}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 max-h-[340px] overflow-y-auto pr-2 custom-scrollbar">
