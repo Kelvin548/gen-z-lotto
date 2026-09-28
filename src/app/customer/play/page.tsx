@@ -74,8 +74,9 @@ export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
-  const [stakePerLine, setStakePerLine] = useState<number>(89);
-  const [customStakeInput, setCustomStakeInput] = useState<string>('89');
+  // Initialized to 0 and empty string so input starts completely empty
+  const [stakePerLine, setStakePerLine] = useState<number>(0);
+  const [customStakeInput, setCustomStakeInput] = useState<string>('');
 
   const [selectedDraw, setSelectedDraw] = useState(defaultDraw.name);
   const [closingTime, setClosingTime] = useState(defaultDraw.closingTime);
@@ -295,7 +296,7 @@ export default function PlayArenaPage() {
         numbers: selectedNumbers,
         stakePerLine: stakePerLine,
         lines: selectedGameType === 'Banker' ? 1 : totalLines,
-        total: finalPayable, // saved with discounted payable amount
+        total: finalPayable,
         originalTotal: baseTotalStake,
         discount: discountAmount,
         minWin: minWin,
@@ -312,7 +313,6 @@ export default function PlayArenaPage() {
       const masterLedger = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
       localStorage.setItem('admin_all_tickets', JSON.stringify([newTicket, ...masterLedger]));
 
-      // Clear selections after successful placement
       setSelectedNumbers([]);
 
       if (data.authorizationUrl) {
@@ -572,7 +572,8 @@ export default function PlayArenaPage() {
               onClick={() => {
                 setSelectedGameType(searchedTicketResult.gameType);
                 setSelectedNumbers(searchedTicketResult.numbers);
-                setStakePerLine(searchedTicketResult.stakePerLine || 89);
+                setStakePerLine(searchedTicketResult.stakePerLine || 0);
+                setCustomStakeInput((searchedTicketResult.stakePerLine || '').toString());
                 setIsSearchModalOpen(false);
               }}
               className="w-full py-3 bg-amber-400 text-black font-black rounded-xl text-xs uppercase"
