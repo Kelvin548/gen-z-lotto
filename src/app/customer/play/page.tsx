@@ -44,21 +44,18 @@ function getNextDefaultDraw() {
   const todayName = dayMap[currentDayIndex];
   const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
 
-  // Order of days starting from today
   const orderedDays = [];
   for (let i = 0; i < 7; i++) {
     const idx = (currentDayIndex + i) % 7;
     orderedDays.push(dayMap[idx]);
   }
 
-  // Find the first draw today or on upcoming days that hasn't closed yet
   for (const targetDay of orderedDays) {
     const drawsOnDay = drawsList.filter(d => d.day === targetDay);
     for (const draw of drawsOnDay) {
       const [hh, mm] = draw.timeString.split(':').map(Number);
       const drawTimeMinutes = hh * 60 + mm;
 
-      // If it's a future day, or later today
       if (targetDay !== todayName || drawTimeMinutes > currentTimeMinutes) {
         return draw;
       }
@@ -74,19 +71,16 @@ export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
-  // Initialized to 0 and empty string so input starts completely empty
   const [stakePerLine, setStakePerLine] = useState<number>(0);
   const [customStakeInput, setCustomStakeInput] = useState<string>('');
 
   const [selectedDraw, setSelectedDraw] = useState(defaultDraw.name);
   const [closingTime, setClosingTime] = useState(defaultDraw.closingTime);
 
-  // Booking Code Search States
   const [searchBookingCode, setSearchBookingCode] = useState('');
   const [searchedTicketResult, setSearchedTicketResult] = useState<any>(null);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
-  // Payment Modal States
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [momoNumber, setMomoNumber] = useState('');
   const [momoProvider, setMomoProvider] = useState('MTN');
@@ -144,7 +138,6 @@ export default function PlayArenaPage() {
 
   const totalLines = calculateTotalLines();
   
-  // Stake calculations with 20% Discount
   const baseTotalStake = selectedGameType === 'Banker' ? (selectedNumbers.length === 1 ? stakePerLine : 0) : totalLines * stakePerLine;
   const discountAmount = baseTotalStake * 0.20;
   const finalPayable = baseTotalStake - discountAmount;
@@ -161,10 +154,11 @@ export default function PlayArenaPage() {
     let baseMultiplier = 240;
     if (selectedGameType === 'Direct 1') baseMultiplier = 10;
     if (selectedGameType === 'Direct 2') baseMultiplier = 240;
-    if (selectedGameType === 'Direct 3' || selectedGameType === 'Perm 3') baseMultiplier = 2100;
+    if (selectedGameType === 'Direct 3') baseMultiplier = 2100;
     if (selectedGameType === 'Direct 4') baseMultiplier = 6000;
     if (selectedGameType === 'Direct 5') baseMultiplier = 44000;
     if (selectedGameType === 'Perm 2') baseMultiplier = 240;
+    if (selectedGameType === 'Perm 3') baseMultiplier = 2100;
 
     const minWin = stakePerLine * baseMultiplier;
     const maxWin = selectedGameType.startsWith('Perm') ? totalLines * stakePerLine * baseMultiplier : minWin;
@@ -180,7 +174,6 @@ export default function PlayArenaPage() {
 
   const toggleNumber = (num: number) => {
     if (selectedGameType === 'Banker') {
-      // Strictly enforce single number selection for Banker: replacing previous selection
       setSelectedNumbers([num]);
       return;
     }
@@ -309,7 +302,7 @@ export default function PlayArenaPage() {
         gameName: selectedDraw,
         numbers: selectedNumbers,
         stakePerLine: stakePerLine,
-        lines: 1,
+        lines: totalLines,
         total: finalPayable,
         originalTotal: baseTotalStake,
         discount: discountAmount,
@@ -491,7 +484,7 @@ export default function PlayArenaPage() {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
-                <span className="font-black text-white">1 / 1</span>
+                <span className="font-black text-white">{totalLines} / {totalLines}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game Type:</span>
