@@ -131,6 +131,9 @@ export default function PlayArenaPage() {
   };
 
   const calculateTotalLines = () => {
+    if (selectedGameType === 'Banker') {
+      return selectedNumbers.length === 1 ? 1 : 0;
+    }
     if (selectedGameType.startsWith('Perm')) {
       const r = getRequiredSelectionSize(selectedGameType);
       return calculateCombinations(selectedNumbers.length, r);
@@ -176,6 +179,12 @@ export default function PlayArenaPage() {
   };
 
   const toggleNumber = (num: number) => {
+    if (selectedGameType === 'Banker') {
+      // Strictly enforce single number selection for Banker: replacing previous selection
+      setSelectedNumbers([num]);
+      return;
+    }
+
     const maxAllowed = getMaxNumbers(selectedGameType);
     if (selectedNumbers.includes(num)) {
       setSelectedNumbers(selectedNumbers.filter((n) => n !== num));
@@ -226,7 +235,12 @@ export default function PlayArenaPage() {
   };
 
   const handleOpenPaymentModal = () => {
-    if (selectedGameType.startsWith('Direct') || selectedGameType === 'Banker') {
+    if (selectedGameType === 'Banker') {
+      if (selectedNumbers.length !== 1) {
+        alert('Banker requires exactly 1 selected number.');
+        return;
+      }
+    } else if (selectedGameType.startsWith('Direct')) {
       const requiredCount = getMaxNumbers(selectedGameType);
       if (selectedNumbers.length !== requiredCount) {
         alert(`${selectedGameType} requires exactly ${requiredCount} number(s). You have selected ${selectedNumbers.length}.`);
@@ -240,7 +254,7 @@ export default function PlayArenaPage() {
       return;
     }
 
-    if (selectedGameType !== 'Banker' && totalLines <= 0) {
+    if (totalLines <= 0) {
       alert('Invalid selection for this game type.');
       return;
     }
@@ -295,7 +309,7 @@ export default function PlayArenaPage() {
         gameName: selectedDraw,
         numbers: selectedNumbers,
         stakePerLine: stakePerLine,
-        lines: selectedGameType === 'Banker' ? 1 : totalLines,
+        lines: 1,
         total: finalPayable,
         originalTotal: baseTotalStake,
         discount: discountAmount,
@@ -408,7 +422,7 @@ export default function PlayArenaPage() {
           <div className="bg-zinc-950/60 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
-                3. Select Numbers (1 to 90) — Max: {getMaxNumbers(selectedGameType)}
+                {selectedGameType === 'Banker' ? 'Select Banker Number (Choose 1 number)' : `3. Select Numbers (1 to 90) — Max: ${getMaxNumbers(selectedGameType)}`}
               </h3>
               <div className="flex items-center gap-3">
                 {selectedNumbers.length > 0 && (
@@ -477,7 +491,7 @@ export default function PlayArenaPage() {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
-                <span className="font-black text-white">{selectedGameType === 'Banker' ? 1 : totalLines}</span>
+                <span className="font-black text-white">1 / 1</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game Type:</span>
@@ -498,7 +512,9 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Stake per Line (GH₵):</span>
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                {selectedGameType === 'Banker' ? 'Banker Price / Stake (GH₵):' : 'Stake per Line (GH₵):'}
+              </span>
               
               <div className="grid grid-cols-4 gap-2">
                 {stakeOptions.map((amount) => {
