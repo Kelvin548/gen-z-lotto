@@ -15,37 +15,70 @@ function calculateCombinations(n: number, r: number): number {
 }
 
 const drawsList = [
-  { name: 'NLA VAG Monday', closingTime: '9:30 AM' },
-  { name: 'Moon Rush Monday', closingTime: '1:00 PM' },
-  { name: 'Monday Special', closingTime: '7:30 PM' },
-  { name: 'NLA VAG Tuesday', closingTime: '9:30 AM' },
-  { name: 'Moon Rush Tuesday', closingTime: '1:00 PM' },
-  { name: 'Lucky Tuesday', closingTime: '7:30 PM' },
-  { name: 'NLA VAG Wednesday', closingTime: '9:30 AM' },
-  { name: 'Moon Rush Wednesday', closingTime: '1:00 PM' },
-  { name: 'Midweek', closingTime: '7:30 PM' },
-  { name: 'NLA VAG Thursday', closingTime: '9:30 AM' },
-  { name: 'Moon Rush Thursday', closingTime: '1:00 PM' },
-  { name: 'Fortune Thursday', closingTime: '7:30 PM' },
-  { name: 'NLA VAG Friday', closingTime: '9:30 AM' },
-  { name: 'Moon Rush Friday', closingTime: '1:00 PM' },
-  { name: 'Friday Bonanza', closingTime: '7:30 PM' },
-  { name: 'NLA VAG Saturday', closingTime: '9:30 AM' },
-  { name: 'Moon Rush Saturday', closingTime: '1:00 PM' },
-  { name: 'National', closingTime: '7:30 PM' },
-  { name: 'Aseda Sunday', closingTime: '5:30 PM' }
+  { name: 'NLA VAG Monday', closingTime: '9:30 AM', timeString: '09:30', day: 'Monday' },
+  { name: 'Moon Rush Monday', closingTime: '1:00 PM', timeString: '13:00', day: 'Monday' },
+  { name: 'Monday Special', closingTime: '7:30 PM', timeString: '19:30', day: 'Monday' },
+  { name: 'NLA VAG Tuesday', closingTime: '9:30 AM', timeString: '09:30', day: 'Tuesday' },
+  { name: 'Moon Rush Tuesday', closingTime: '1:00 PM', timeString: '13:00', day: 'Tuesday' },
+  { name: 'Lucky Tuesday', closingTime: '7:30 PM', timeString: '19:30', day: 'Tuesday' },
+  { name: 'NLA VAG Wednesday', closingTime: '9:30 AM', timeString: '09:30', day: 'Wednesday' },
+  { name: 'Moon Rush Wednesday', closingTime: '1:00 PM', timeString: '13:00', day: 'Wednesday' },
+  { name: 'Midweek', closingTime: '7:30 PM', timeString: '19:30', day: 'Wednesday' },
+  { name: 'NLA VAG Thursday', closingTime: '9:30 AM', timeString: '09:30', day: 'Thursday' },
+  { name: 'Moon Rush Thursday', closingTime: '1:00 PM', timeString: '13:00', day: 'Thursday' },
+  { name: 'Fortune Thursday', closingTime: '7:30 PM', timeString: '19:30', day: 'Thursday' },
+  { name: 'NLA VAG Friday', closingTime: '9:30 AM', timeString: '09:30', day: 'Friday' },
+  { name: 'Moon Rush Friday', closingTime: '1:00 PM', timeString: '13:00', day: 'Friday' },
+  { name: 'Friday Bonanza', closingTime: '7:30 PM', timeString: '19:30', day: 'Friday' },
+  { name: 'NLA VAG Saturday', closingTime: '9:30 AM', timeString: '09:30', day: 'Saturday' },
+  { name: 'Moon Rush Saturday', closingTime: '1:00 PM', timeString: '13:00', day: 'Saturday' },
+  { name: 'National', closingTime: '7:30 PM', timeString: '19:30', day: 'Saturday' },
+  { name: 'Aseda Sunday', closingTime: '5:30 PM', timeString: '17:30', day: 'Sunday' }
 ];
 
+// Helper to determine the default active draw based on current time
+function getNextDefaultDraw() {
+  const now = new Date();
+  const currentDayIndex = now.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const todayName = dayMap[currentDayIndex];
+  const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+
+  // Order of days starting from today
+  const orderedDays = [];
+  for (let i = 0; i < 7; i++) {
+    const idx = (currentDayIndex + i) % 7;
+    orderedDays.push(dayMap[idx]);
+  }
+
+  // Find the first draw today or on upcoming days that hasn't closed yet
+  for (const targetDay of orderedDays) {
+    const drawsOnDay = drawsList.filter(d => d.day === targetDay);
+    for (const draw of drawsOnDay) {
+      const [hh, mm] = draw.timeString.split(':').map(Number);
+      const drawTimeMinutes = hh * 60 + mm;
+
+      // If it's a future day, or later today
+      if (targetDay !== todayName || drawTimeMinutes > currentTimeMinutes) {
+        return draw;
+      }
+    }
+  }
+
+  return drawsList[0];
+}
+
 export default function PlayArenaPage() {
+  const defaultDraw = getNextDefaultDraw();
+
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
-  // Corrected state variables with matching setters
   const [stakePerLine, setStakePerLine] = useState<number>(89);
   const [customStakeInput, setCustomStakeInput] = useState<string>('89');
 
-  const [selectedDraw, setSelectedDraw] = useState('NLA VAG Thursday');
-  const [closingTime, setClosingTime] = useState('9:30 AM');
+  const [selectedDraw, setSelectedDraw] = useState(defaultDraw.name);
+  const [closingTime, setClosingTime] = useState(defaultDraw.closingTime);
 
   // Booking Code Search States
   const [searchBookingCode, setSearchBookingCode] = useState('');
@@ -218,7 +251,6 @@ export default function PlayArenaPage() {
     setIsProcessing(true);
 
     try {
-      // Convert GHS totalStake to pesewas (multiply by 100)
       const amountPesewas = Math.round(totalStake * 100);
       const currentUser = localStorage.getItem('active_username') || 'customer_user';
 
@@ -243,7 +275,6 @@ export default function PlayArenaPage() {
       setIsProcessing(false);
       setIsPaymentModalOpen(false);
 
-      // Save local ticket record before redirecting/completing
       const storageKey = `user_tickets_${currentUser}`;
       const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -291,9 +322,9 @@ export default function PlayArenaPage() {
       </div>
 
       {/* Booking Code Quick Search Banner */}
-      <div className="bg-zinc-950/80 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-zinc-950/85 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">🔑</span>
+          <span className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">🔑</span>
           <div>
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Have a Booking Code?</h4>
             <p className="text-[11px] text-zinc-400">Paste your code below to instantly load and review a stake.</p>
