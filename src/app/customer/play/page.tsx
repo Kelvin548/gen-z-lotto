@@ -139,7 +139,11 @@ export default function PlayArenaPage() {
   };
 
   const totalLines = calculateTotalLines();
-  const totalStake = selectedGameType === 'Banker' ? (selectedNumbers.length === 1 ? stakePerLine : 0) : totalLines * stakePerLine;
+  
+  // Stake calculations with 20% Discount
+  const baseTotalStake = selectedGameType === 'Banker' ? (selectedNumbers.length === 1 ? stakePerLine : 0) : totalLines * stakePerLine;
+  const discountAmount = baseTotalStake * 0.20;
+  const finalPayable = baseTotalStake - discountAmount;
 
   const getPotentialWins = () => {
     if (selectedGameType === 'Banker') {
@@ -239,7 +243,7 @@ export default function PlayArenaPage() {
       alert('Invalid selection for this game type.');
       return;
     }
-    if (totalStake <= 0) {
+    if (finalPayable <= 0) {
       alert('Please enter a valid stake amount.');
       return;
     }
@@ -255,7 +259,7 @@ export default function PlayArenaPage() {
     setIsProcessing(true);
 
     try {
-      const amountPesewas = Math.round(totalStake * 100);
+      const amountPesewas = Math.round(finalPayable * 100);
       const currentUser = localStorage.getItem('active_username') || 'customer_user';
 
       const response = await fetch('/api/wallet/deposit', {
@@ -291,7 +295,9 @@ export default function PlayArenaPage() {
         numbers: selectedNumbers,
         stakePerLine: stakePerLine,
         lines: selectedGameType === 'Banker' ? 1 : totalLines,
-        total: totalStake,
+        total: finalPayable, // saved with discounted payable amount
+        originalTotal: baseTotalStake,
+        discount: discountAmount,
         minWin: minWin,
         maxWin: maxWin,
         date: new Date().toLocaleDateString(),
@@ -441,7 +447,7 @@ export default function PlayArenaPage() {
 
         </div>
 
-        {/* Enhanced Bet Slip */}
+        {/* Enhanced Bet Slip with 20% Discount Breakdown */}
         <div className="space-y-6">
           <div className="bg-zinc-950/90 backdrop-blur-2xl border border-amber-500/40 rounded-3xl p-6 shadow-2xl relative sticky top-6 space-y-4">
             <div className="flex items-center justify-between mb-2">
@@ -454,8 +460,12 @@ export default function PlayArenaPage() {
 
             <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
               <div className="flex justify-between text-zinc-300">
-                <span>Price:</span>
-                <span className="font-black text-amber-400">GH₵ {totalStake.toFixed(2)}</span>
+                <span>Original Price:</span>
+                <span className="font-semibold line-through text-zinc-500">GH₵ {baseTotalStake.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Promo Discount (20%):</span>
+                <span className="font-black text-emerald-400">- GH₵ {discountAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Minimum Win:</span>
@@ -525,15 +535,15 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="pt-3 border-t border-zinc-900 flex items-center justify-between">
-              <span className="text-xs uppercase font-bold text-zinc-400">Total Stake:</span>
+              <span className="text-xs uppercase font-bold text-zinc-400">Final Payable:</span>
               <span className="text-xl font-black text-amber-400">
-                GH₵ {totalStake.toFixed(2)}
+                GH₵ {finalPayable.toFixed(2)}
               </span>
             </div>
 
             <button
               onClick={handleOpenPaymentModal}
-              disabled={(selectedNumbers.length === 0) || (selectedGameType !== 'Banker' && totalLines <= 0) || totalStake <= 0}
+              disabled={(selectedNumbers.length === 0) || (selectedGameType !== 'Banker' && totalLines <= 0) || finalPayable <= 0}
               className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all active:scale-[0.98]"
             >
               Confirm & Place Bet
@@ -556,7 +566,7 @@ export default function PlayArenaPage() {
               <div className="flex justify-between"><span>Game Type:</span> <span className="font-bold text-white">{searchedTicketResult.gameType}</span></div>
               <div className="flex justify-between"><span>Selected Numbers:</span> <span className="font-bold text-amber-400">{searchedTicketResult.numbers.join(', ')}</span></div>
               <div className="flex justify-between"><span>Total Lines:</span> <span className="font-bold text-white">{searchedTicketResult.lines}</span></div>
-              <div className="flex justify-between"><span>Total Stake:</span> <span className="font-bold text-amber-400">GH₵ {searchedTicketResult.total?.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Final Payable:</span> <span className="font-bold text-amber-400">GH₵ {searchedTicketResult.total?.toFixed(2)}</span></div>
             </div>
             <button
               onClick={() => {
@@ -583,7 +593,9 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-400"><span>Amount to Pay:</span> <span className="font-bold text-amber-400 text-sm">GH₵ {totalStake.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Original Price:</span> <span className="line-through text-zinc-500">GH₵ {baseTotalStake.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>20% Promo Discount:</span> <span className="font-semibold text-emerald-400">- GH₵ {discountAmount.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400 pt-1 border-t border-zinc-800"><span>Amount to Pay:</span> <span className="font-bold text-amber-400 text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
               <div className="flex justify-between text-zinc-400"><span>Game Slip:</span> <span className="font-semibold text-white">{selectedGameType}</span></div>
               <div className="flex justify-between text-zinc-400"><span>Potential Min Win:</span> <span className="font-semibold text-emerald-400">GH₵ {minWin.toFixed(2)}</span></div>
             </div>
@@ -629,7 +641,7 @@ export default function PlayArenaPage() {
                     Initializing Paystack Prompt...
                   </>
                 ) : (
-                  `Pay GH₵ ${totalStake.toFixed(2)} & Place Bet`
+                  `Pay GH₵ ${finalPayable.toFixed(2)} & Place Bet`
                 )}
               </button>
             </div>
