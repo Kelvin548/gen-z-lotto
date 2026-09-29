@@ -69,10 +69,8 @@ export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
-  // Specific Banker state: exactly ONE banker number and multiple secondary pairs
+  // Single Banker number state (strictly one number)
   const [bankerNumber, setBankerNumber] = useState<number | null>(null);
-  const [secondaryNumbers, setSecondaryNumbers] = useState<number[]>([]);
-  const [bankerStep, setBankerStep] = useState<'BANKER' | 'PAIRS'>('BANKER');
 
   const [stakePerLine, setStakePerLine] = useState<number>(0);
   const [customStakeInput, setCustomStakeInput] = useState<string>('');
@@ -114,7 +112,7 @@ export default function PlayArenaPage() {
       case 'Direct 5': return 5;
       case 'Perm 2': return 25; 
       case 'Perm 3': return 10; 
-      case 'Banker': return 90; 
+      case 'Banker': return 1; 
       default: return 10;
     }
   };
@@ -129,7 +127,7 @@ export default function PlayArenaPage() {
 
   const calculateTotalLines = () => {
     if (selectedGameType === 'Banker') {
-      return bankerNumber !== null ? secondaryNumbers.length : 0;
+      return bankerNumber !== null ? 1 : 0;
     }
     if (selectedGameType.startsWith('Perm')) {
       const r = getRequiredSelectionSize(selectedGameType);
@@ -141,10 +139,9 @@ export default function PlayArenaPage() {
 
   const totalLines = calculateTotalLines();
   
-  // Banker price is fixed at GH₵89.00 for the single banker selection, separate from line stakes
   const BANKER_FIXED_PRICE = 89.00;
   const baseTotalStake = selectedGameType === 'Banker' 
-    ? (bankerNumber !== null ? BANKER_FIXED_PRICE + (totalLines * stakePerLine) : 0)
+    ? (bankerNumber !== null ? BANKER_FIXED_PRICE + (stakePerLine > 0 ? stakePerLine : 0) : 0)
     : (totalLines * stakePerLine);
 
   const discountAmount = baseTotalStake * 0.20;
@@ -152,8 +149,9 @@ export default function PlayArenaPage() {
 
   const getPotentialWins = () => {
     if (selectedGameType === 'Banker') {
-      if (bankerNumber === null || secondaryNumbers.length === 0) return { minWin: 0, maxWin: 0 };
-      const winVal = stakePerLine * 88 * totalLines; 
+      if (bankerNumber === null) return { minWin: 0, maxWin: 0 };
+      const activeStake = stakePerLine > 0 ? stakePerLine : BANKER_FIXED_PRICE;
+      const winVal = activeStake * 10; 
       return { minWin: winVal, maxWin: winVal };
     }
 
@@ -179,24 +177,14 @@ export default function PlayArenaPage() {
     setSelectedGameType(type);
     setSelectedNumbers([]); 
     setBankerNumber(null);
-    setSecondaryNumbers([]);
-    setBankerStep('BANKER');
   };
 
   const toggleNumber = (num: number) => {
     if (selectedGameType === 'Banker') {
-      if (bankerStep === 'BANKER') {
-        // Step 1: Exactly ONE single Banker number
-        setBankerNumber(num);
-        setBankerStep('PAIRS');
+      if (bankerNumber === num) {
+        setBankerNumber(null);
       } else {
-        // Step 2: Secondary paired numbers (cannot be the banker number)
-        if (num === bankerNumber) return;
-        if (secondaryNumbers.includes(num)) {
-          setSecondaryNumbers(secondaryNumbers.filter(n => n !== num));
-        } else {
-          setSecondaryNumbers([...secondaryNumbers, num].sort((a, b) => a - b));
-        }
+        setBankerNumber(num);
       }
       return;
     }
@@ -218,8 +206,6 @@ export default function PlayArenaPage() {
   const clearSelectedNumbers = () => {
     if (selectedGameType === 'Banker') {
       setBankerNumber(null);
-      setSecondaryNumbers([]);
-      setBankerStep('BANKER');
     } else {
       setSelectedNumbers([]);
     }
@@ -258,8 +244,8 @@ export default function PlayArenaPage() {
 
   const handleOpenPaymentModal = () => {
     if (selectedGameType === 'Banker') {
-      if (bankerNumber === null || secondaryNumbers.length === 0) {
-        alert('Banker requires exactly 1 banker number and at least 1 secondary pairing number.');
+      if (bankerNumber === null) {
+        alert('Banker requires exactly 1 number selection.');
         return;
       }
     } else if (selectedGameType.startsWith('Direct')) {
@@ -324,7 +310,7 @@ export default function PlayArenaPage() {
       const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
 
       const ticketNumbers = selectedGameType === 'Banker' 
-        ? [bankerNumber, ...secondaryNumbers] 
+        ? [bankerNumber] 
         : selectedNumbers;
 
       const newTicket = {
@@ -335,7 +321,7 @@ export default function PlayArenaPage() {
         gameName: selectedDraw,
         numbers: ticketNumbers,
         bankerNumber: selectedGameType === 'Banker' ? bankerNumber : null,
-        secondaryNumbers: selectedGameType === 'Banker' ? secondaryNumbers : [],
+        secondaryNumbers: [],
         stakePerLine: stakePerLine,
         lines: totalLines,
         total: finalPayable,
@@ -357,8 +343,6 @@ export default function PlayArenaPage() {
 
       setSelectedNumbers([]);
       setBankerNumber(null);
-      setSecondaryNumbers([]);
-      setBankerStep('BANKER');
 
       if (data.authorizationUrl) {
         window.location.href = data.authorizationUrl;
@@ -452,21 +436,12 @@ export default function PlayArenaPage() {
               <div>
                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
                   {selectedGameType === 'Banker'
-                    ? bankerStep === 'BANKER'
-                      ? 'Step 1: Select Banker Number (Choose exactly 1)'
-                      : `Step 2: Select Numbers to Pair with Banker [${bankerNumber}]`
+                    ? 'Select Banker Number (Choose exactly 1 number)'
                     : `3. Select Numbers (1 to 90) — Max: ${getMaxNumbers(selectedGameType)}`}
                 </h3>
-                {selectedGameType === 'Banker' && (
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    {bankerStep === 'BANKER' 
-                      ? 'Click any number to set your single Banker.'
-                      : 'Click numbers to pair against your Banker. Each secondary number creates 1 line.'}
-                  </p>
-                )}
               </div>
               <div className="flex items-center gap-3">
-                {((selectedGameType === 'Banker' && (bankerNumber !== null || secondaryNumbers.length > 0)) || (selectedGameType !== 'Banker' && selectedNumbers.length > 0)) && (
+                {((selectedGameType === 'Banker' && bankerNumber !== null) || (selectedGameType !== 'Banker' && selectedNumbers.length > 0)) && (
                   <button
                     onClick={clearSelectedNumbers}
                     className="text-[11px] text-red-400 hover:text-red-300 font-bold uppercase transition"
@@ -475,9 +450,8 @@ export default function PlayArenaPage() {
                   </button>
                 )}
                 {selectedGameType === 'Banker' ? (
-                  <div className="text-xs text-zinc-400 font-semibold space-x-2">
-                    <span>Banker: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</strong></span>
-                    <span>| Pairs: <strong className="text-amber-400">{secondaryNumbers.length}</strong></span>
+                  <div className="text-xs text-zinc-400 font-semibold">
+                    Banker: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</strong>
                   </div>
                 ) : (
                   <span className="text-xs text-zinc-400 font-semibold">
@@ -487,33 +461,14 @@ export default function PlayArenaPage() {
               </div>
             </div>
 
-            {selectedGameType === 'Banker' && bankerStep === 'PAIRS' && (
-              <div className="flex items-center justify-between bg-zinc-900 border border-amber-500/30 rounded-2xl p-3">
-                <span className="text-xs text-zinc-300 font-medium">
-                  Current Banker: <strong className="text-amber-400">{bankerNumber! < 10 ? `0${bankerNumber}` : bankerNumber}</strong>
-                </span>
-                <button
-                  onClick={() => { setBankerNumber(null); setSecondaryNumbers([]); setBankerStep('BANKER'); }}
-                  className="text-[11px] font-bold text-amber-400 hover:underline uppercase"
-                >
-                  Change Banker
-                </button>
-              </div>
-            )}
-
             <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 max-h-[340px] overflow-y-auto pr-2 custom-scrollbar">
               {Array.from({ length: 90 }, (_, i) => i + 1).map((num) => {
                 const isBanker = selectedGameType === 'Banker' && bankerNumber === num;
-                const isSecondary = selectedGameType === 'Banker' && secondaryNumbers.includes(num);
                 const isSelectedStandard = selectedGameType !== 'Banker' && selectedNumbers.includes(num);
 
                 let btnStyle = 'bg-zinc-900/90 border border-zinc-800 text-zinc-300 hover:border-amber-500/50 hover:text-white';
-                if (isBanker) {
+                if (isBanker || isSelectedStandard) {
                   btnStyle = 'bg-amber-400 text-black shadow-lg shadow-amber-400/30 scale-105 border-amber-300 ring-2 ring-amber-400';
-                } else if (isSecondary) {
-                  btnStyle = 'bg-yellow-600 text-white shadow-md border-yellow-500 scale-102';
-                } else if (isSelectedStandard) {
-                  btnStyle = 'bg-amber-400 text-black shadow-lg shadow-amber-400/30 scale-105';
                 }
 
                 return (
@@ -542,22 +497,12 @@ export default function PlayArenaPage() {
 
             <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
               {selectedGameType === 'Banker' && (
-                <>
-                  <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80 space-y-1 mb-2">
-                    <div className="flex justify-between text-zinc-300">
-                      <span>Banker Number:</span>
-                      <span className="font-bold text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</span>
-                    </div>
-                    <div className="flex justify-between text-zinc-300">
-                      <span>Paired Numbers:</span>
-                      <span className="font-bold text-white">{secondaryNumbers.length > 0 ? secondaryNumbers.map(n => n < 10 ? `0${n}` : n).join(', ') : 'None'}</span>
-                    </div>
-                  </div>
+                <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80 space-y-1 mb-2">
                   <div className="flex justify-between text-zinc-300">
-                    <span>Banker Price:</span>
-                    <span className="font-bold text-amber-400">GH₵ 89.00</span>
+                    <span>Banker Number:</span>
+                    <span className="font-bold text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</span>
                   </div>
-                </>
+                </div>
               )}
               <div className="flex justify-between text-zinc-300">
                 <span>Original Total:</span>
@@ -598,7 +543,7 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Stake per Line (GH₵):</span>
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Stake Amount (GH₵):</span>
               
               <div className="grid grid-cols-4 gap-2">
                 {stakeOptions.map((amount) => {
@@ -645,7 +590,7 @@ export default function PlayArenaPage() {
               onClick={handleOpenPaymentModal}
               disabled={
                 selectedGameType === 'Banker'
-                  ? (bankerNumber === null || secondaryNumbers.length === 0 || finalPayable <= 0)
+                  ? (bankerNumber === null || finalPayable <= 0)
                   : (selectedNumbers.length === 0 || totalLines <= 0 || finalPayable <= 0)
               }
               className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all active:scale-[0.98]"
@@ -666,8 +611,7 @@ export default function PlayArenaPage() {
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs text-zinc-300">
               <div className="flex justify-between"><span>Booking Code:</span> <span className="font-bold text-amber-400">{searchedTicketResult.bookingCode}</span></div>
               <div className="flex justify-between"><span>Game Type:</span> <span className="font-bold text-white">{searchedTicketResult.gameType}</span></div>
-              <div className="flex justify-between"><span>Selected Numbers:</span> <span className="font-bold text-amber-400">{searchedTicketResult.numbers.join(', ')}</span></div>
-              <div className="flex justify-between"><span>Total Lines:</span> <span className="font-bold text-white">{searchedTicketResult.lines}</span></div>
+              <div className="flex justify-between"><span>Selected Number:</span> <span className="font-bold text-amber-400">{searchedTicketResult.numbers.join(', ')}</span></div>
               <div className="flex justify-between"><span>Final Payable:</span> <span className="font-bold text-amber-400">GH₵ {searchedTicketResult.total?.toFixed(2)}</span></div>
             </div>
             <button
@@ -675,8 +619,6 @@ export default function PlayArenaPage() {
                 setSelectedGameType(searchedTicketResult.gameType);
                 if (searchedTicketResult.gameType === 'Banker') {
                   setBankerNumber(searchedTicketResult.bankerNumber ?? searchedTicketResult.numbers[0]);
-                  setSecondaryNumbers(searchedTicketResult.secondaryNumbers ?? searchedTicketResult.numbers.slice(1));
-                  setBankerStep('PAIRS');
                 } else {
                   setSelectedNumbers(searchedTicketResult.numbers);
                 }
@@ -703,12 +645,8 @@ export default function PlayArenaPage() {
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
               <div className="flex justify-between text-zinc-400"><span>Game Type:</span> <span className="text-white font-bold">{selectedGameType}</span></div>
               {selectedGameType === 'Banker' && (
-                <>
-                  <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
-                  <div className="flex justify-between text-zinc-400"><span>Banker Price:</span> <span className="text-amber-400 font-bold">GH₵ 89.00</span></div>
-                </>
+                <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
               )}
-              <div className="flex justify-between text-zinc-400"><span>Total Lines:</span> <span className="text-white font-bold">{totalLines}</span></div>
               <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
             </div>
 
