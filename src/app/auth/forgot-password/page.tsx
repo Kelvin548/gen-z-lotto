@@ -1,4 +1,5 @@
-﻿'use client';
+﻿// src/app/auth/forgot-password/page.tsx
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,13 +10,14 @@ export default function ForgotPasswordPage() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setSuccessMessage('');
+    setGeneratedOtp('');
 
     try {
       const res = await fetch('/api/auth/forgot-password', {
@@ -27,20 +29,27 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to send SMS OTP');
+        throw new Error(data.error || 'Failed to generate OTP');
       }
 
       const testOtp = data.otp || '123456';
-      setSuccessMessage(`Test OTP generated successfully! Use code: ${testOtp}`);
-
-      setTimeout(() => {
-        router.push(`/auth/reset-password?phone=${encodeURIComponent(phone)}&otp=${testOtp}`);
-      }, 1500);
+      setGeneratedOtp(testOtp); // Stays permanently on screen until you navigate away
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const copyToClipboard = (otp: string) => {
+    navigator.clipboard.writeText(otp);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const proceedToReset = () => {
+    if (!generatedOtp) return;
+    router.push(`/auth/reset-password?phone=${encodeURIComponent(phone)}&otp=${generatedOtp}`);
   };
 
   return (
@@ -59,7 +68,7 @@ export default function ForgotPasswordPage() {
             FORGOT <span className="text-white">PASSWORD</span>
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
-            Enter your mobile phone number to receive an SMS verification code
+            Enter your mobile phone number to generate a secure development OTP
           </p>
         </div>
 
@@ -69,9 +78,30 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
-        {successMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center text-xs text-emerald-400 font-bold">
-            {successMessage}
+        {/* Persistent Test OTP Display & Copy Box */}
+        {generatedOtp && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-center animate-pulse">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-1">
+              Dev Test OTP (Tap to Copy)
+            </p>
+            <div 
+              onClick={() => copyToClipboard(generatedOtp)}
+              className="text-3xl font-black tracking-widest text-white cursor-pointer hover:text-amber-300 transition-colors py-1 select-all"
+              title="Click to copy"
+            >
+              {generatedOtp}
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">
+              {copied ? '✅ Copied to clipboard!' : 'Tap code to copy or click proceed below'}
+            </p>
+
+            <button
+              type="button"
+              onClick={proceedToReset}
+              className="w-full mt-3 rounded-xl bg-amber-400 py-2.5 font-bold text-black text-xs uppercase shadow-md hover:bg-amber-300 transition-all cursor-pointer"
+            >
+              Proceed to Reset Password &rarr;
+            </button>
           </div>
         )}
 
@@ -93,9 +123,9 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-sm uppercase shadow-lg shadow-amber-500/20 hover:opacity-95 transition-all disabled:opacity-50"
+            className="w-full mt-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-sm uppercase shadow-lg shadow-amber-500/20 hover:opacity-95 transition-all disabled:opacity-50 cursor-pointer"
           >
-            {loading ? 'Sending SMS...' : 'Send SMS OTP Code'}
+            {loading ? 'Generating Code...' : 'Generate Test OTP'}
           </button>
         </form>
 
