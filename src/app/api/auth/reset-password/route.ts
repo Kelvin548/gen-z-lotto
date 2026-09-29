@@ -28,15 +28,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid OTP code.' }, { status: 400 });
     }
 
-    // Normalize phone number to match the login route format
     const normalizedPhone = normalizePhoneNumber(phone);
+
+    // Try finding the user by normalized phone, fallback to raw phone
+    let user = await prisma.user.findUnique({
+      where: { phoneNumber: normalizedPhone },
+    });
+
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { phoneNumber: phone },
+      });
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: 'No account found with this phone number in the database.' }, { status: 404 });
+    }
 
     // 1. Hash the new password securely
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 2. Update the user's password using the normalized phone number
+    // 2. Update the user's password safely using their unique ID
     await prisma.user.update({
-      where: { phoneNumber: normalizedPhone },
+      where: { id: user.id },
       data: { passwordHash: hashedPassword },
     });
 
@@ -45,7 +59,7 @@ export async function POST(req: Request) {
 
     console.log('\n========================================');
     console.log('🔒 [PASSWORD RESET & DATABASE UPDATE SUCCESSFUL]');
-    console.log(`📱 Phone: ${normalizedPhone}`);
+    console.log(`📱 Phone: ${user.phoneNumber}`);
     console.log('========================================\n');
 
     return NextResponse.json({ success: true, message: 'Password reset successfully.' }, { status: 200 });
