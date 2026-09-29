@@ -46,7 +46,7 @@ jobs:
         run: npx prisma db push --skip-generate
 
       - name: Run ESLint
-        run: npm run lint --dir .
+        run: npm run lint
 
       - name: Type Check TypeScript
         run: npx tsc --noEmit
