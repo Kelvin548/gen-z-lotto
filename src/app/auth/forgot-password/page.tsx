@@ -1,5 +1,4 @@
-// src/app/auth/forgot-password/page.tsx
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -31,8 +30,6 @@ export default function ForgotPasswordPage() {
         throw new Error(data.error || 'Failed to send SMS OTP');
       }
 
-      // For seamless testing/development without live SMS gateway:
-      // We automatically supply/display the test code so you can proceed instantly.
       const testOtp = data.otp || '123456';
       setSuccessMessage(`Test OTP generated successfully! Use code: ${testOtp}`);
 
@@ -50,7 +47,6 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden text-white">
       <div className="w-full max-w-md bg-zinc-950/40 backdrop-blur-2xl border border-amber-500/30 rounded-3xl p-8 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
         <div className="text-center mb-6">
-          {/* Logo Container */}
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-amber-500/40 mb-3 overflow-hidden shadow-lg shadow-amber-500/10">
             <img 
               src="/logo.png" 
