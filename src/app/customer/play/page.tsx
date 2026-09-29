@@ -282,7 +282,8 @@ export default function PlayArenaPage() {
     setIsProcessing(true);
 
     try {
-      const amountPesewas = Math.round(finalPayable * 100);
+      const amountMinor = Math.round(finalPayable * 100);
+      const idempotencyKey = `dep-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       const currentUser = localStorage.getItem('active_username') || 'customer_user';
 
       const response = await fetch('/api/wallet/deposit', {
@@ -291,16 +292,15 @@ export default function PlayArenaPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: `${currentUser}@genzlotto.com`,
-          amountPesewas: amountPesewas,
-          userId: currentUser,
+          amountMinor: amountMinor,
+          idempotencyKey: idempotencyKey,
         }),
       });
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || 'Payment initialization failed.');
+        throw new Error(data.errors?.[0] || data.message || 'Payment initialization failed.');
       }
 
       setIsProcessing(false);
