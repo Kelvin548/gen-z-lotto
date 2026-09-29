@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     console.log(`🔢 Code: ${otp}`);
     console.log('========================================\n');
 
-    return NextResponse.json({ success: true, message: 'OTP sent successfully' }, { status: 200 });
+    // Return the dynamic otp in the response so the frontend displays the new code every time
+    return NextResponse.json({ success: true, message: 'OTP sent successfully', otp }, { status: 200 });
   } catch (err: any) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
