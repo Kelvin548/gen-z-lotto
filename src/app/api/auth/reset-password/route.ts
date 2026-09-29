@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { globalOtpStore } from '../forgot-password/route';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
+const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -25,15 +29,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid OTP code.' }, { status: 400 });
     }
 
+    // 1. Hash the new password securely
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // 2. Update the user's password using the correct schema field 'passwordHash'
+    await prisma.user.update({
+      where: { phoneNumber: phone },
+      data: { passwordHash: hashedPassword },
+    });
+
+    // 3. Clear the used OTP
     globalOtpStore.delete(phone);
 
     console.log('\n========================================');
-    console.log('🔒 [PASSWORD RESET SUCCESSFUL]');
+    console.log('🔒 [PASSWORD RESET & DATABASE UPDATE SUCCESSFUL]');
     console.log(`📱 Phone: ${phone}`);
     console.log('========================================\n');
 
     return NextResponse.json({ success: true, message: 'Password reset successfully.' }, { status: 200 });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Password reset database error:', error);
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }
