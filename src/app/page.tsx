@@ -62,6 +62,17 @@ export default function PublicLandingPage() {
           <div className="w-[600px] h-[600px] rounded-full bg-yellow-500 blur-[150px]"></div>
         </div>
 
+        {/* 20% Discount Prominent Promo Banner */}
+        <div className="relative z-10 mb-8 inline-flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-amber-500/20 border border-amber-400/50 shadow-xl shadow-amber-500/10 animate-bounce">
+          <span className="flex h-3 w-3 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+          </span>
+          <span className="text-xs md:text-sm font-black tracking-wider text-amber-300 uppercase">
+            🔥 Special Promo: 20% discount on all stakes!
+          </span>
+        </div>
+
         <div className="relative z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-xs font-bold text-yellow-400 mb-6 tracking-wide uppercase">
           <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
           Ghana's Premier 5/90 Digital Lottery
