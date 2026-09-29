@@ -12,7 +12,7 @@ jobs:
 
     env:
       NODE_ENV: test
-      DATABASE_URL: "file:./test.db"
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       JWT_SECRET: "ci-secret-key-32-characters-minimum!"
       DEMO_DEPOSIT_ENABLED: "true"
 
