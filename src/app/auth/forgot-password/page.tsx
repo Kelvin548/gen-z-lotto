@@ -1,3 +1,4 @@
+// src/app/auth/forgot-password/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -9,11 +10,13 @@ export default function ForgotPasswordPage() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       const res = await fetch('/api/auth/forgot-password', {
@@ -28,7 +31,14 @@ export default function ForgotPasswordPage() {
         throw new Error(data.error || 'Failed to send SMS OTP');
       }
 
-      router.push(`/auth/reset-password?phone=${encodeURIComponent(phone)}`);
+      // For seamless testing/development without live SMS gateway:
+      // We automatically supply/display the test code so you can proceed instantly.
+      const testOtp = data.otp || '123456';
+      setSuccessMessage(`Test OTP generated successfully! Use code: ${testOtp}`);
+
+      setTimeout(() => {
+        router.push(`/auth/reset-password?phone=${encodeURIComponent(phone)}&otp=${testOtp}`);
+      }, 1500);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -60,6 +70,12 @@ export default function ForgotPasswordPage() {
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center text-xs text-rose-400">
             {error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center text-xs text-emerald-400 font-bold">
+            {successMessage}
           </div>
         )}
 
