@@ -115,7 +115,7 @@ export default function PlayArenaPage() {
       case 'Direct 5': return 5;
       case 'Perm 2': return 25; 
       case 'Perm 3': return 10; 
-      case 'Banker': return 90; // Secondary numbers pool limit
+      case 'Banker': return 90; 
       default: return 10;
     }
   };
@@ -142,7 +142,12 @@ export default function PlayArenaPage() {
 
   const totalLines = calculateTotalLines();
   
-  const baseTotalStake = totalLines * stakePerLine;
+  // Fixed GH₵89 Banker selection fee separate from line stakes
+  const BANKER_FIXED_PRICE = 89.00;
+  const baseTotalStake = selectedGameType === 'Banker' 
+    ? BANKER_FIXED_PRICE + (totalLines * stakePerLine)
+    : (totalLines * stakePerLine);
+
   const discountAmount = baseTotalStake * 0.20;
   const finalPayable = baseTotalStake - discountAmount;
 
@@ -182,12 +187,10 @@ export default function PlayArenaPage() {
   const toggleNumber = (num: number) => {
     if (selectedGameType === 'Banker') {
       if (bankerStep === 'BANKER') {
-        // Step 1: Set the single Banker number and advance to secondary pairing
         setBankerNumber(num);
         setBankerStep('PAIRS');
       } else {
-        // Step 2: Toggle secondary numbers (cannot be the banker number)
-        if (num === bankerNumber) return;
+        if (num === bankerNumber) return; // Cannot pair banker with itself
         if (secondaryNumbers.includes(num)) {
           setSecondaryNumbers(secondaryNumbers.filter(n => n !== num));
         } else {
@@ -543,19 +546,25 @@ export default function PlayArenaPage() {
 
             <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
               {selectedGameType === 'Banker' && (
-                <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80 space-y-1 mb-2">
-                  <div className="flex justify-between text-zinc-300">
-                    <span>Banker Number:</span>
-                    <span className="font-bold text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</span>
+                <>
+                  <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80 space-y-1 mb-2">
+                    <div className="flex justify-between text-zinc-300">
+                      <span>Banker Number:</span>
+                      <span className="font-bold text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</span>
+                    </div>
+                    <div className="flex justify-between text-zinc-300">
+                      <span>Paired Numbers:</span>
+                      <span className="font-bold text-white">{secondaryNumbers.length > 0 ? secondaryNumbers.map(n => n < 10 ? `0${n}` : n).join(', ') : 'None'}</span>
+                    </div>
                   </div>
                   <div className="flex justify-between text-zinc-300">
-                    <span>Paired Numbers:</span>
-                    <span className="font-bold text-white">{secondaryNumbers.length > 0 ? secondaryNumbers.map(n => n < 10 ? `0${n}` : n).join(', ') : 'None'}</span>
+                    <span>Banker Price:</span>
+                    <span className="font-bold text-amber-400">GH₵ 89.00</span>
                   </div>
-                </div>
+                </>
               )}
               <div className="flex justify-between text-zinc-300">
-                <span>Original Price:</span>
+                <span>Original Total:</span>
                 <span className="font-semibold line-through text-zinc-500">GH₵ {baseTotalStake.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
@@ -572,7 +581,7 @@ export default function PlayArenaPage() {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
-                <span className="font-black text-white">{totalLines} / {totalLines}</span>
+                <span className="font-black text-white">{totalLines}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game Type:</span>
@@ -594,7 +603,7 @@ export default function PlayArenaPage() {
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
               <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                {selectedGameType === 'Banker' ? 'Banker Line Price / Stake (GH₵):' : 'Stake per Line (GH₵):'}
+                {selectedGameType === 'Banker' ? 'Stake per Line (GH₵):' : 'Stake per Line (GH₵):'}
               </span>
               
               <div className="grid grid-cols-4 gap-2">
@@ -701,58 +710,54 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-400"><span>Original Price:</span> <span className="line-through text-zinc-500">GH₵ {baseTotalStake.toFixed(2)}</span></div>
-              <div className="flex justify-between text-zinc-400"><span>20% Promo Discount:</span> <span className="font-semibold text-emerald-400">- GH₵ {discountAmount.toFixed(2)}</span></div>
-              <div className="flex justify-between text-zinc-400 pt-1 border-t border-zinc-800"><span>Amount to Pay:</span> <span className="font-bold text-amber-400 text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
-              <div className="flex justify-between text-zinc-400"><span>Game Slip:</span> <span className="font-semibold text-white">{selectedGameType}</span></div>
-              <div className="flex justify-between text-zinc-400"><span>Potential Min Win:</span> <span className="font-semibold text-emerald-400">GH₵ {minWin.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Game Type:</span> <span className="text-white font-bold">{selectedGameType}</span></div>
+              {selectedGameType === 'Banker' && (
+                <>
+                  <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
+                  <div className="flex justify-between text-zinc-400"><span>Banker Price:</span> <span className="text-amber-400 font-bold">GH₵ 89.00</span></div>
+                </>
+              )}
+              <div className="flex justify-between text-zinc-400"><span>Total Lines:</span> <span className="text-white font-bold">{totalLines}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block mb-2">Select Network</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['MTN', 'Telecel', 'AirtelTigo'].map((prov) => (
-                    <button
-                      key={prov}
-                      type="button"
-                      onClick={() => setMomoProvider(prov)}
-                      className={`py-2 rounded-xl text-xs font-black border transition ${
-                        momoProvider === prov ? 'bg-amber-400 border-amber-400 text-black shadow-md' : 'bg-zinc-900 border-zinc-800 text-zinc-300'
-                      }`}
-                    >
-                      {prov}
-                    </button>
-                  ))}
-                </div>
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Select Mobile Network</label>
+              <div className="grid grid-cols-2 gap-3">
+                {['MTN', 'Telecel'].map((prov) => (
+                  <button
+                    key={prov}
+                    onClick={() => setMomoProvider(prov)}
+                    className={`py-2.5 rounded-xl text-xs font-black border transition ${
+                      momoProvider === prov
+                        ? 'bg-amber-400 border-amber-400 text-black'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-300'
+                    }`}
+                  >
+                    {prov} MoMo
+                  </button>
+                ))}
               </div>
-
-              <div>
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block mb-2">Momo Phone Number</label>
-                <input 
-                  type="tel"
-                  placeholder="024 000 0000"
-                  value={momoNumber}
-                  onChange={(e) => setMomoNumber(e.target.value)}
-                  className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white text-sm font-semibold focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <button
-                onClick={handleProcessMomoPayment}
-                disabled={isProcessing}
-                className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-              >
-                {isProcessing ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
-                    Initializing Paystack Prompt...
-                  </>
-                ) : (
-                  `Pay GH₵ ${finalPayable.toFixed(2)} & Place Bet`
-                )}
-              </button>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Mobile Number</label>
+              <input
+                type="text"
+                placeholder="024XXXXXXX"
+                value={momoNumber}
+                onChange={(e) => setMomoNumber(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none focus:border-amber-400"
+              />
+            </div>
+
+            <button
+              onClick={handleProcessMomoPayment}
+              disabled={isProcessing}
+              className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition disabled:opacity-50"
+            >
+              {isProcessing ? 'Processing Payment...' : `Authorize GH₵ ${finalPayable.toFixed(2)}`}
+            </button>
           </div>
         </div>
       )}
