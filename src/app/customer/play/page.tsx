@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-// Helper to calculate combinations (n choose r) for Perm games
 function calculateCombinations(n: number, r: number): number {
   if (n < r) return 0;
   let numerator = 1;
@@ -70,7 +69,7 @@ export default function PlayArenaPage() {
   const [selectedGameType, setSelectedGameType] = useState('Perm 2');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
-  // Specific Banker state separation
+  // Specific Banker state: exactly ONE banker number and multiple secondary pairs
   const [bankerNumber, setBankerNumber] = useState<number | null>(null);
   const [secondaryNumbers, setSecondaryNumbers] = useState<number[]>([]);
   const [bankerStep, setBankerStep] = useState<'BANKER' | 'PAIRS'>('BANKER');
@@ -142,10 +141,10 @@ export default function PlayArenaPage() {
 
   const totalLines = calculateTotalLines();
   
-  // Fixed GH₵89 Banker selection fee separate from line stakes
+  // Banker price is fixed at GH₵89.00 for the single banker selection, separate from line stakes
   const BANKER_FIXED_PRICE = 89.00;
   const baseTotalStake = selectedGameType === 'Banker' 
-    ? BANKER_FIXED_PRICE + (totalLines * stakePerLine)
+    ? (bankerNumber !== null ? BANKER_FIXED_PRICE + (totalLines * stakePerLine) : 0)
     : (totalLines * stakePerLine);
 
   const discountAmount = baseTotalStake * 0.20;
@@ -187,10 +186,12 @@ export default function PlayArenaPage() {
   const toggleNumber = (num: number) => {
     if (selectedGameType === 'Banker') {
       if (bankerStep === 'BANKER') {
+        // Step 1: Exactly ONE single Banker number
         setBankerNumber(num);
         setBankerStep('PAIRS');
       } else {
-        if (num === bankerNumber) return; // Cannot pair banker with itself
+        // Step 2: Secondary paired numbers (cannot be the banker number)
+        if (num === bankerNumber) return;
         if (secondaryNumbers.includes(num)) {
           setSecondaryNumbers(secondaryNumbers.filter(n => n !== num));
         } else {
@@ -378,7 +379,6 @@ export default function PlayArenaPage() {
         <p className="text-xs text-zinc-400">Select your draw, game type, and numbers to lock in your stake.</p>
       </div>
 
-      {/* Booking Code Quick Search Banner */}
       <div className="bg-zinc-950/85 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">🔑</span>
@@ -405,9 +405,7 @@ export default function PlayArenaPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         <div className="lg:col-span-2 space-y-6">
-          
           <div className="bg-zinc-950/60 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-6 shadow-xl space-y-3">
             <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
               1. Select Active Draw
@@ -530,10 +528,8 @@ export default function PlayArenaPage() {
               })}
             </div>
           </div>
-
         </div>
 
-        {/* Enhanced Bet Slip */}
         <div className="space-y-6">
           <div className="bg-zinc-950/90 backdrop-blur-2xl border border-amber-500/40 rounded-3xl p-6 shadow-2xl relative sticky top-6 space-y-4">
             <div className="flex items-center justify-between mb-2">
@@ -602,9 +598,7 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                {selectedGameType === 'Banker' ? 'Stake per Line (GH₵):' : 'Stake per Line (GH₵):'}
-              </span>
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Stake per Line (GH₵):</span>
               
               <div className="grid grid-cols-4 gap-2">
                 {stakeOptions.map((amount) => {
@@ -660,10 +654,8 @@ export default function PlayArenaPage() {
             </button>
           </div>
         </div>
-
       </div>
 
-      {/* Booking Code Result Modal */}
       {isSearchModalOpen && searchedTicketResult && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
@@ -700,7 +692,6 @@ export default function PlayArenaPage() {
         </div>
       )}
 
-      {/* Payment Modal */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
