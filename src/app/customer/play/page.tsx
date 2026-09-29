@@ -66,7 +66,7 @@ function getNextDefaultDraw() {
 export default function PlayArenaPage() {
   const defaultDraw = getNextDefaultDraw();
 
-  const [selectedGameType, setSelectedGameType] = useState('Perm 2');
+  const [selectedGameType, setSelectedGameType] = useState('Banker');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
   // Single Banker number state (strictly one number)
@@ -127,7 +127,7 @@ export default function PlayArenaPage() {
 
   const calculateTotalLines = () => {
     if (selectedGameType === 'Banker') {
-      return bankerNumber !== null ? 1 : 0;
+      return bankerNumber !== null ? 89 : 0; // Fixed 89 lines when a banker is picked
     }
     if (selectedGameType.startsWith('Perm')) {
       const r = getRequiredSelectionSize(selectedGameType);
@@ -139,9 +139,9 @@ export default function PlayArenaPage() {
 
   const totalLines = calculateTotalLines();
   
-  const BANKER_FIXED_PRICE = 89.00;
-  const baseTotalStake = selectedGameType === 'Banker' 
-    ? (bankerNumber !== null ? BANKER_FIXED_PRICE + (stakePerLine > 0 ? stakePerLine : 0) : 0)
+  // Total price = Stake entered × 89 lines (matching reference video)
+  const baseTotalStake = selectedGameType === 'Banker'
+    ? (bankerNumber !== null ? totalLines * stakePerLine : 0)
     : (totalLines * stakePerLine);
 
   const discountAmount = baseTotalStake * 0.20;
@@ -150,8 +150,8 @@ export default function PlayArenaPage() {
   const getPotentialWins = () => {
     if (selectedGameType === 'Banker') {
       if (bankerNumber === null) return { minWin: 0, maxWin: 0 };
-      const activeStake = stakePerLine > 0 ? stakePerLine : BANKER_FIXED_PRICE;
-      const winVal = activeStake * 10; 
+      // Scaling minimum win based on stake entered × lines × multiplier (e.g. video shows GH₵ 10 stake -> GH₵ 8,800.00 win)
+      const winVal = stakePerLine * 880; 
       return { minWin: winVal, maxWin: winVal };
     }
 
@@ -436,7 +436,7 @@ export default function PlayArenaPage() {
               <div>
                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
                   {selectedGameType === 'Banker'
-                    ? 'Select Banker Number (Choose exactly 1 number)'
+                    ? 'Pick Numbers (1 more)'
                     : `3. Select Numbers (1 to 90) — Max: ${getMaxNumbers(selectedGameType)}`}
                 </h3>
               </div>
@@ -451,7 +451,7 @@ export default function PlayArenaPage() {
                 )}
                 {selectedGameType === 'Banker' ? (
                   <div className="text-xs text-zinc-400 font-semibold">
-                    Banker: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</strong>
+                    Selected Number: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</strong>
                   </div>
                 ) : (
                   <span className="text-xs text-zinc-400 font-semibold">
@@ -496,29 +496,13 @@ export default function PlayArenaPage() {
             <p className="text-xs text-zinc-400">Review your selections before placement.</p>
 
             <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
-              {selectedGameType === 'Banker' && (
-                <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80 space-y-1 mb-2">
-                  <div className="flex justify-between text-zinc-300">
-                    <span>Banker Number:</span>
-                    <span className="font-bold text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</span>
-                  </div>
-                </div>
-              )}
               <div className="flex justify-between text-zinc-300">
-                <span>Original Total:</span>
-                <span className="font-semibold line-through text-zinc-500">GH₵ {baseTotalStake.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-zinc-300">
-                <span>Promo Discount (20%):</span>
-                <span className="font-black text-emerald-400">- GH₵ {discountAmount.toFixed(2)}</span>
+                <span>Price:</span>
+                <span className="font-bold text-amber-400">GH₵ {baseTotalStake.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Minimum Win:</span>
                 <span className="font-black text-emerald-400">GH₵ {minWin.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-zinc-300">
-                <span>Maximum Win:</span>
-                <span className="font-black text-emerald-400">GH₵ {maxWin.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
@@ -526,7 +510,7 @@ export default function PlayArenaPage() {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game Type:</span>
-                <span className="font-black text-amber-400 uppercase">{selectedGameType}</span>
+                <span className="font-black text-amber-400 uppercase">Banker Against All</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game:</span>
@@ -543,7 +527,7 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Stake Amount (GH₵):</span>
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Amount (GH₵):</span>
               
               <div className="grid grid-cols-4 gap-2">
                 {stakeOptions.map((amount) => {
@@ -570,7 +554,7 @@ export default function PlayArenaPage() {
                   <input
                     type="number"
                     min="1"
-                    placeholder="Enter custom amount..."
+                    placeholder="Enter amount..."
                     value={customStakeInput}
                     onChange={handleCustomStakeChange}
                     className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 py-3 pl-14 pr-4 text-white text-xs font-bold focus:outline-none focus:border-amber-400 transition-all"
@@ -595,44 +579,11 @@ export default function PlayArenaPage() {
               }
               className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all active:scale-[0.98]"
             >
-              Confirm & Place Bet
+              Play Game
             </button>
           </div>
         </div>
       </div>
-
-      {isSearchModalOpen && searchedTicketResult && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black text-white uppercase tracking-wider">Ticket Details</h3>
-              <button onClick={() => setIsSearchModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">✕</button>
-            </div>
-            <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs text-zinc-300">
-              <div className="flex justify-between"><span>Booking Code:</span> <span className="font-bold text-amber-400">{searchedTicketResult.bookingCode}</span></div>
-              <div className="flex justify-between"><span>Game Type:</span> <span className="font-bold text-white">{searchedTicketResult.gameType}</span></div>
-              <div className="flex justify-between"><span>Selected Number:</span> <span className="font-bold text-amber-400">{searchedTicketResult.numbers.join(', ')}</span></div>
-              <div className="flex justify-between"><span>Final Payable:</span> <span className="font-bold text-amber-400">GH₵ {searchedTicketResult.total?.toFixed(2)}</span></div>
-            </div>
-            <button
-              onClick={() => {
-                setSelectedGameType(searchedTicketResult.gameType);
-                if (searchedTicketResult.gameType === 'Banker') {
-                  setBankerNumber(searchedTicketResult.bankerNumber ?? searchedTicketResult.numbers[0]);
-                } else {
-                  setSelectedNumbers(searchedTicketResult.numbers);
-                }
-                setStakePerLine(searchedTicketResult.stakePerLine || 0);
-                setCustomStakeInput((searchedTicketResult.stakePerLine || '').toString());
-                setIsSearchModalOpen(false);
-              }}
-              className="w-full py-3 bg-amber-400 text-black font-black rounded-xl text-xs uppercase"
-            >
-              Load Into Slip
-            </button>
-          </div>
-        </div>
-      )}
 
       {isPaymentModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -643,7 +594,7 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-400"><span>Game Type:</span> <span className="text-white font-bold">{selectedGameType}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Game Type:</span> <span className="text-white font-bold">Banker Against All</span></div>
               {selectedGameType === 'Banker' && (
                 <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
               )}
