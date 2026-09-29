@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { globalOtpStore } from '../forgot-password/route';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db/prisma';
+import { normalizePhoneNumber } from '@/lib/auth/phone';
 import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -29,12 +28,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid OTP code.' }, { status: 400 });
     }
 
+    // Normalize phone number to match the login route format
+    const normalizedPhone = normalizePhoneNumber(phone);
+
     // 1. Hash the new password securely
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 2. Update the user's password using the correct schema field 'passwordHash'
+    // 2. Update the user's password using the normalized phone number
     await prisma.user.update({
-      where: { phoneNumber: phone },
+      where: { phoneNumber: normalizedPhone },
       data: { passwordHash: hashedPassword },
     });
 
@@ -43,7 +45,7 @@ export async function POST(req: Request) {
 
     console.log('\n========================================');
     console.log('🔒 [PASSWORD RESET & DATABASE UPDATE SUCCESSFUL]');
-    console.log(`📱 Phone: ${phone}`);
+    console.log(`📱 Phone: ${normalizedPhone}`);
     console.log('========================================\n');
 
     return NextResponse.json({ success: true, message: 'Password reset successfully.' }, { status: 200 });
