@@ -29,17 +29,20 @@ export async function POST(req: Request) {
     }
 
     const normalizedPhone = normalizePhoneNumber(phone);
+    const altPhone1 = phone.startsWith('0') ? '+233' + phone.slice(1) : phone;
+    const altPhone2 = phone.startsWith('+233') ? '0' + phone.slice(4) : phone;
 
-    // Try finding the user by normalized phone, fallback to raw phone
-    let user = await prisma.user.findUnique({
-      where: { phoneNumber: normalizedPhone },
+    // Search across all common variations of the phone number format
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { phoneNumber: phone },
+          { phoneNumber: normalizedPhone },
+          { phoneNumber: altPhone1 },
+          { phoneNumber: altPhone2 },
+        ],
+      },
     });
-
-    if (!user) {
-      user = await prisma.user.findUnique({
-        where: { phoneNumber: phone },
-      });
-    }
 
     if (!user) {
       return NextResponse.json({ error: 'No account found with this phone number in the database.' }, { status: 404 });
@@ -48,7 +51,7 @@ export async function POST(req: Request) {
     // 1. Hash the new password securely
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 2. Update the user's password safely using their unique ID
+    // 2. Update the user's password safely using their unique database ID
     await prisma.user.update({
       where: { id: user.id },
       data: { passwordHash: hashedPassword },
@@ -59,7 +62,7 @@ export async function POST(req: Request) {
 
     console.log('\n========================================');
     console.log('🔒 [PASSWORD RESET & DATABASE UPDATE SUCCESSFUL]');
-    console.log(`📱 Phone: ${user.phoneNumber}`);
+    console.log(`📱 Phone Found & Updated: ${user.phoneNumber}`);
     console.log('========================================\n');
 
     return NextResponse.json({ success: true, message: 'Password reset successfully.' }, { status: 200 });
