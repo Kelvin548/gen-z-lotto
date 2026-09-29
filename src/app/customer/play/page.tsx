@@ -68,8 +68,6 @@ export default function PlayArenaPage() {
 
   const [selectedGameType, setSelectedGameType] = useState('Banker');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-  
-  // Single Banker number state (strictly one number)
   const [bankerNumber, setBankerNumber] = useState<number | null>(null);
 
   const [stakePerLine, setStakePerLine] = useState<number>(0);
@@ -127,7 +125,7 @@ export default function PlayArenaPage() {
 
   const calculateTotalLines = () => {
     if (selectedGameType === 'Banker') {
-      return bankerNumber !== null ? 89 : 0; // Fixed 89 lines when a banker is picked
+      return bankerNumber !== null ? 89 : 0;
     }
     if (selectedGameType.startsWith('Perm')) {
       const r = getRequiredSelectionSize(selectedGameType);
@@ -138,8 +136,6 @@ export default function PlayArenaPage() {
   };
 
   const totalLines = calculateTotalLines();
-  
-  // Total price = Stake entered × 89 lines (matching reference video)
   const baseTotalStake = selectedGameType === 'Banker'
     ? (bankerNumber !== null ? totalLines * stakePerLine : 0)
     : (totalLines * stakePerLine);
@@ -150,7 +146,6 @@ export default function PlayArenaPage() {
   const getPotentialWins = () => {
     if (selectedGameType === 'Banker') {
       if (bankerNumber === null) return { minWin: 0, maxWin: 0 };
-      // Scaling minimum win based on stake entered × lines × multiplier (e.g. video shows GH₵ 10 stake -> GH₵ 8,800.00 win)
       const winVal = stakePerLine * 880; 
       return { minWin: winVal, maxWin: winVal };
     }
@@ -198,7 +193,7 @@ export default function PlayArenaPage() {
       } else if (selectedNumbers.length < maxAllowed) {
         setSelectedNumbers([...selectedNumbers, num].sort((a, b) => a - b));
       } else {
-        alert(`${selectedGameType} allows a maximum of ${maxAllowed} number(s).`);
+        alert(${selectedGameType} allows a maximum of  number(s).);
       }
     }
   };
@@ -251,7 +246,7 @@ export default function PlayArenaPage() {
     } else if (selectedGameType.startsWith('Direct')) {
       const requiredCount = getMaxNumbers(selectedGameType);
       if (selectedNumbers.length !== requiredCount) {
-        alert(`${selectedGameType} requires exactly ${requiredCount} number(s). You have selected ${selectedNumbers.length}.`);
+        alert(${selectedGameType} requires exactly  number(s). You have selected .);
         return;
       }
     } else if (selectedGameType === 'Perm 2' && selectedNumbers.length < 2) {
@@ -283,7 +278,7 @@ export default function PlayArenaPage() {
 
     try {
       const amountMinor = Math.round(finalPayable * 100);
-      const idempotencyKey = `dep-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      const idempotencyKey = dep--;
       const currentUser = localStorage.getItem('active_username') || 'customer_user';
 
       const response = await fetch('/api/wallet/deposit', {
@@ -306,15 +301,15 @@ export default function PlayArenaPage() {
       setIsProcessing(false);
       setIsPaymentModalOpen(false);
 
-      const storageKey = `user_tickets_${currentUser}`;
-      const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
+      const storageKey = user_tickets_;
+      const bookingCode = BK-;
 
       const ticketNumbers = selectedGameType === 'Banker' 
         ? [bankerNumber] 
         : selectedNumbers;
 
       const newTicket = {
-        id: `#TKT-${Math.floor(1000 + Math.random() * 9000)}`,
+        id: #TKT-,
         bookingCode: bookingCode,
         username: currentUser,
         gameType: selectedGameType,
@@ -332,7 +327,7 @@ export default function PlayArenaPage() {
         date: new Date().toLocaleDateString(),
         closingTime: closingTime,
         status: 'Active',
-        paymentMethod: `${momoProvider} Momo (${momoNumber})`
+        paymentMethod: ${momoProvider} Momo ()
       };
 
       const existingTickets = JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -347,7 +342,7 @@ export default function PlayArenaPage() {
       if (data.authorizationUrl) {
         window.location.href = data.authorizationUrl;
       } else {
-        alert(`Payment prompt initialized! Your Booking Code is: ${bookingCode}`);
+        alert(Payment prompt initialized! Your Booking Code is: );
         window.location.href = '/customer/tickets';
       }
     } catch (error: any) {
@@ -365,7 +360,7 @@ export default function PlayArenaPage() {
 
       <div className="bg-zinc-950/85 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">🔑</span>
+          <span className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">??</span>
           <div>
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Have a Booking Code?</h4>
             <p className="text-[11px] text-zinc-400">Paste your code below to instantly load and review a stake.</p>
@@ -401,7 +396,7 @@ export default function PlayArenaPage() {
             >
               {drawsList.map((draw) => (
                 <option key={draw.name} value={draw.name}>
-                  {draw.name} — Closes at {draw.closingTime}
+                  {draw.name} � Closes at {draw.closingTime}
                 </option>
               ))}
             </select>
@@ -418,11 +413,7 @@ export default function PlayArenaPage() {
                   <button
                     key={type}
                     onClick={() => handleGameTypeChange(type)}
-                    className={`py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border ${
-                      isSelected
-                        ? 'bg-amber-400 border-amber-400 text-black shadow-lg shadow-amber-400/20 scale-[1.02]'
-                        : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-amber-500/40 hover:text-white'
-                    }`}
+                    className={py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border }
                   >
                     {type}
                   </button>
@@ -437,7 +428,7 @@ export default function PlayArenaPage() {
                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
                   {selectedGameType === 'Banker'
                     ? 'Pick Numbers (1 more)'
-                    : `3. Select Numbers (1 to 90) — Max: ${getMaxNumbers(selectedGameType)}`}
+                    : 3. Select Numbers (1 to 90) � Max: }
                 </h3>
               </div>
               <div className="flex items-center gap-3">
@@ -451,7 +442,7 @@ export default function PlayArenaPage() {
                 )}
                 {selectedGameType === 'Banker' ? (
                   <div className="text-xs text-zinc-400 font-semibold">
-                    Selected Number: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</strong>
+                    Selected Number: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ?   : bankerNumber) : 'None'}</strong>
                   </div>
                 ) : (
                   <span className="text-xs text-zinc-400 font-semibold">
@@ -475,9 +466,9 @@ export default function PlayArenaPage() {
                   <button
                     key={num}
                     onClick={() => toggleNumber(num)}
-                    className={`h-11 rounded-xl font-black text-xs transition-all flex items-center justify-center ${btnStyle}`}
+                    className={h-11 rounded-xl font-black text-xs transition-all flex items-center justify-center }
                   >
-                    {num < 10 ? `0${num}` : num}
+                    {num < 10 ?   : num}
                   </button>
                 );
               })}
@@ -498,11 +489,11 @@ export default function PlayArenaPage() {
             <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
               <div className="flex justify-between text-zinc-300">
                 <span>Price:</span>
-                <span className="font-bold text-amber-400">GH₵ {baseTotalStake.toFixed(2)}</span>
+                <span className="font-bold text-amber-400">GH? {baseTotalStake.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Minimum Win:</span>
-                <span className="font-black text-emerald-400">GH₵ {minWin.toFixed(2)}</span>
+                <span className="font-black text-emerald-400">GH? {minWin.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
@@ -527,8 +518,8 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Amount (GH₵):</span>
-              
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Amount (GH?):</span>
+
               <div className="grid grid-cols-4 gap-2">
                 {stakeOptions.map((amount) => {
                   const isSelected = stakePerLine === amount;
@@ -536,11 +527,7 @@ export default function PlayArenaPage() {
                     <button
                       key={amount}
                       onClick={() => handlePresetSelect(amount)}
-                      className={`py-2 rounded-xl text-xs font-black transition-all border ${
-                        isSelected
-                          ? 'bg-amber-400 border-amber-400 text-black shadow-md shadow-amber-400/20'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40'
-                      }`}
+                      className={py-2 rounded-xl text-xs font-black transition-all border }
                     >
                       {amount}
                     </button>
@@ -550,7 +537,7 @@ export default function PlayArenaPage() {
 
               <div className="pt-2">
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">GH₵</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">GH?</span>
                   <input
                     type="number"
                     min="1"
@@ -566,7 +553,7 @@ export default function PlayArenaPage() {
             <div className="pt-3 border-t border-zinc-900 flex items-center justify-between">
               <span className="text-xs uppercase font-bold text-zinc-400">Final Payable:</span>
               <span className="text-xl font-black text-amber-400">
-                GH₵ {finalPayable.toFixed(2)}
+                GH? {finalPayable.toFixed(2)}
               </span>
             </div>
 
@@ -590,7 +577,7 @@ export default function PlayArenaPage() {
           <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-black text-white uppercase tracking-wider">Mobile Money Checkout</h3>
-              <button onClick={() => setIsPaymentModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">✕</button>
+              <button onClick={() => setIsPaymentModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">?</button>
             </div>
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
@@ -598,7 +585,7 @@ export default function PlayArenaPage() {
               {selectedGameType === 'Banker' && (
                 <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
               )}
-              <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH? {finalPayable.toFixed(2)}</span></div>
             </div>
 
             <div className="space-y-3">
@@ -608,11 +595,7 @@ export default function PlayArenaPage() {
                   <button
                     key={prov}
                     onClick={() => setMomoProvider(prov)}
-                    className={`py-2.5 rounded-xl text-xs font-black border transition ${
-                      momoProvider === prov
-                        ? 'bg-amber-400 border-amber-400 text-black'
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-300'
-                    }`}
+                    className={py-2.5 rounded-xl text-xs font-black border transition }
                   >
                     {prov} MoMo
                   </button>
@@ -636,12 +619,11 @@ export default function PlayArenaPage() {
               disabled={isProcessing}
               className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition disabled:opacity-50"
             >
-              {isProcessing ? 'Processing Payment...' : `Authorize GH₵ ${finalPayable.toFixed(2)}`}
+              {isProcessing ? 'Processing Payment...' : Authorize GH? }
             </button>
           </div>
         </div>
       )}
-
     </div>
   );
 }
