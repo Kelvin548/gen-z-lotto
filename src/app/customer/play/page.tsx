@@ -99,7 +99,7 @@ export default function PlayArenaPage() {
   const stakeOptions = [10, 20, 50, 89];
 
   if (!isMounted) {
-    return null; // Prevents server/client mismatch during initial hydration
+    return null; 
   }
 
   const handleDrawChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -296,6 +296,7 @@ export default function PlayArenaPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Forces the browser to send the session cookie securely
         body: JSON.stringify({
           amountMinor: amountMinor,
           idempotencyKey: idempotencyKey,
