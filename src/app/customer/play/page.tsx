@@ -162,14 +162,14 @@ export default function PlayArenaPage() {
 
     if (totalLines <= 0) return { minWin: 0, maxWin: 0 };
 
-    let baseMultiplier = 240;
+    let baseMultiplier = 220;
     if (selectedGameType === 'Direct 1') baseMultiplier = 10;
-    if (selectedGameType === 'Direct 2') baseMultiplier = 240;
-    if (selectedGameType === 'Direct 3') baseMultiplier = 2100;
-    if (selectedGameType === 'Direct 4') baseMultiplier = 6000;
-    if (selectedGameType === 'Direct 5') baseMultiplier = 44000;
-    if (selectedGameType === 'Perm 2') baseMultiplier = 240;
-    if (selectedGameType === 'Perm 3') baseMultiplier = 2100;
+    if (selectedGameType === 'Direct 2') baseMultiplier = 220;
+    if (selectedGameType === 'Direct 3') baseMultiplier = 1800;
+    if (selectedGameType === 'Direct 4') baseMultiplier = 4500;
+    if (selectedGameType === 'Direct 5') baseMultiplier = 38000;
+    if (selectedGameType === 'Perm 2') baseMultiplier = 220;
+    if (selectedGameType === 'Perm 3') baseMultiplier = 1800;
 
     const minWin = stakePerLine * baseMultiplier;
     const maxWin = selectedGameType.startsWith('Perm') ? totalLines * stakePerLine * baseMultiplier : minWin;
@@ -296,7 +296,7 @@ export default function PlayArenaPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Ensures the session cookie is transmitted properly to fix 401 errors
+        credentials: 'include',
         body: JSON.stringify({
           amountMinor: amountMinor,
           idempotencyKey: idempotencyKey,
@@ -516,7 +516,7 @@ export default function PlayArenaPage() {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game Type:</span>
-                <span className="font-black text-amber-400 uppercase">Banker Against All</span>
+                <span className="font-black text-amber-400 uppercase">{selectedGameType}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Game:</span>
@@ -600,7 +600,7 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-400"><span>Game Type:</span> <span className="text-white font-bold">Banker Against All</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Game Type:</span> <span className="text-white font-bold">{selectedGameType}</span></div>
               {selectedGameType === 'Banker' && (
                 <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
               )}
