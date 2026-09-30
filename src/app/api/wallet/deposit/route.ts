@@ -1,3 +1,4 @@
+// src/app/api/wallet/deposit/route.ts
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/rbac";
 import crypto from "crypto";
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          errors: parseResult.error.errors.map((e) => ${e.path.join(".")}: ),
+          errors: parseResult.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`),
         },
         { status: 422 }
       );
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await prisma.(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       let wallet = await tx.wallet.findUnique({
         where: { userId },
       });
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
         throw new Error("WALLET_SUSPENDED");
       }
 
-      const depositReference = DEMO-DEP-;
+      const depositReference = `DEMO-DEP-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
 
       const { updatedWallet } = await WalletService.creditWallet(
         userId,
