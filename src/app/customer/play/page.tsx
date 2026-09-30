@@ -296,7 +296,7 @@ export default function PlayArenaPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Forces the browser to send the session cookie securely
+        credentials: 'include', // Ensures the session cookie is transmitted properly to fix 401 errors
         body: JSON.stringify({
           amountMinor: amountMinor,
           idempotencyKey: idempotencyKey,
@@ -369,7 +369,7 @@ export default function PlayArenaPage() {
         <p className="text-xs text-zinc-400">Select your draw, game type, and numbers to lock in your stake.</p>
       </div>
 
-      <div className="bg-zinc-950/85 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-zinc-950/85 backdrop-blur-xl border border-amber-500/35 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">🔑</span>
           <div>
