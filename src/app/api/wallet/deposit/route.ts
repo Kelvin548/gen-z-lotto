@@ -58,10 +58,21 @@ export async function POST(request: Request) {
     });
 
     if (existingTx) {
-      const wallet = await prisma.wallet.findUnique({
+      let wallet = await prisma.wallet.findUnique({
         where: { userId },
         select: { availableBalanceMinor: true },
       });
+
+      if (!wallet) {
+        wallet = await prisma.wallet.create({
+          data: {
+            userId,
+            availableBalanceMinor: BigInt(0),
+            status: WalletStatus.ACTIVE,
+            currency: "GHS",
+          },
+        });
+      }
 
       return NextResponse.json(
         {
@@ -76,7 +87,7 @@ export async function POST(request: Request) {
             type: existingTx.type,
           },
           wallet: {
-            availableBalanceMinor: wallet ? Number(wallet.availableBalanceMinor) : 0,
+            availableBalanceMinor: Number(wallet.availableBalanceMinor),
           },
         },
         { status: 200 }
