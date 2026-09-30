@@ -193,7 +193,7 @@ export default function PlayArenaPage() {
       } else if (selectedNumbers.length < maxAllowed) {
         setSelectedNumbers([...selectedNumbers, num].sort((a, b) => a - b));
       } else {
-        alert(${selectedGameType} allows a maximum of  number(s).);
+        alert(`${selectedGameType} allows a maximum of ${maxAllowed} number(s).`);
       }
     }
   };
@@ -246,7 +246,7 @@ export default function PlayArenaPage() {
     } else if (selectedGameType.startsWith('Direct')) {
       const requiredCount = getMaxNumbers(selectedGameType);
       if (selectedNumbers.length !== requiredCount) {
-        alert(${selectedGameType} requires exactly  number(s). You have selected .);
+        alert(`${selectedGameType} requires exactly ${requiredCount} number(s). You have selected ${selectedNumbers.length}.`);
         return;
       }
     } else if (selectedGameType === 'Perm 2' && selectedNumbers.length < 2) {
@@ -278,7 +278,7 @@ export default function PlayArenaPage() {
 
     try {
       const amountMinor = Math.round(finalPayable * 100);
-      const idempotencyKey = dep--;
+      const idempotencyKey = `dep-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       const currentUser = localStorage.getItem('active_username') || 'customer_user';
 
       const response = await fetch('/api/wallet/deposit', {
@@ -301,15 +301,15 @@ export default function PlayArenaPage() {
       setIsProcessing(false);
       setIsPaymentModalOpen(false);
 
-      const storageKey = user_tickets_;
-      const bookingCode = BK-;
+      const storageKey = `user_tickets_${currentUser}`;
+      const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
 
       const ticketNumbers = selectedGameType === 'Banker' 
         ? [bankerNumber] 
         : selectedNumbers;
 
       const newTicket = {
-        id: #TKT-,
+        id: `#TKT-${Math.floor(1000 + Math.random() * 9000)}`,
         bookingCode: bookingCode,
         username: currentUser,
         gameType: selectedGameType,
@@ -327,7 +327,7 @@ export default function PlayArenaPage() {
         date: new Date().toLocaleDateString(),
         closingTime: closingTime,
         status: 'Active',
-        paymentMethod: ${momoProvider} Momo ()
+        paymentMethod: `${momoProvider} Momo (${momoNumber})`
       };
 
       const existingTickets = JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -342,7 +342,7 @@ export default function PlayArenaPage() {
       if (data.authorizationUrl) {
         window.location.href = data.authorizationUrl;
       } else {
-        alert(Payment prompt initialized! Your Booking Code is: );
+        alert(`Payment prompt initialized! Your Booking Code is: ${bookingCode}`);
         window.location.href = '/customer/tickets';
       }
     } catch (error: any) {
@@ -413,7 +413,11 @@ export default function PlayArenaPage() {
                   <button
                     key={type}
                     onClick={() => handleGameTypeChange(type)}
-                    className={py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border }
+                    className={`py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border ${
+                      isSelected
+                        ? 'bg-amber-400 border-amber-400 text-black shadow-lg shadow-amber-400/20 scale-[1.02]'
+                        : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-amber-500/40 hover:text-white'
+                    }`}
                   >
                     {type}
                   </button>
@@ -428,7 +432,7 @@ export default function PlayArenaPage() {
                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
                   {selectedGameType === 'Banker'
                     ? 'Pick Numbers (1 more)'
-                    : 3. Select Numbers (1 to 90) — Max: }
+                    : `3. Select Numbers (1 to 90) — Max: ${getMaxNumbers(selectedGameType)}`}
                 </h3>
               </div>
               <div className="flex items-center gap-3">
@@ -442,7 +446,7 @@ export default function PlayArenaPage() {
                 )}
                 {selectedGameType === 'Banker' ? (
                   <div className="text-xs text-zinc-400 font-semibold">
-                    Selected Number: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ?   : bankerNumber) : 'None'}</strong>
+                    Selected Number: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</strong>
                   </div>
                 ) : (
                   <span className="text-xs text-zinc-400 font-semibold">
@@ -466,9 +470,9 @@ export default function PlayArenaPage() {
                   <button
                     key={num}
                     onClick={() => toggleNumber(num)}
-                    className={h-11 rounded-xl font-black text-xs transition-all flex items-center justify-center }
+                    className={`h-11 rounded-xl font-black text-xs transition-all flex items-center justify-center ${btnStyle}`}
                   >
-                    {num < 10 ?   : num}
+                    {num < 10 ? `0${num}` : num}
                   </button>
                 );
               })}
@@ -527,7 +531,11 @@ export default function PlayArenaPage() {
                     <button
                       key={amount}
                       onClick={() => handlePresetSelect(amount)}
-                      className={py-2 rounded-xl text-xs font-black transition-all border }
+                      className={`py-2 rounded-xl text-xs font-black transition-all border ${
+                        isSelected
+                          ? 'bg-amber-400 border-amber-400 text-black shadow-md shadow-amber-400/20'
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40'
+                      }`}
                     >
                       {amount}
                     </button>
@@ -595,7 +603,11 @@ export default function PlayArenaPage() {
                   <button
                     key={prov}
                     onClick={() => setMomoProvider(prov)}
-                    className={py-2.5 rounded-xl text-xs font-black border transition }
+                    className={`py-2.5 rounded-xl text-xs font-black border transition ${
+                      momoProvider === prov
+                        ? 'bg-amber-400 border-amber-400 text-black'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-300'
+                    }`}
                   >
                     {prov} MoMo
                   </button>
@@ -619,7 +631,7 @@ export default function PlayArenaPage() {
               disabled={isProcessing}
               className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition disabled:opacity-50"
             >
-              {isProcessing ? 'Processing Payment...' : Authorize GH₵ }
+              {isProcessing ? 'Processing Payment...' : `Authorize GH₵ ${finalPayable.toFixed(2)}`}
             </button>
           </div>
         </div>
