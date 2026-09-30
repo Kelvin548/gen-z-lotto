@@ -1,4 +1,4 @@
-// src/app/api/wallet/deposit/route.ts
+﻿// src/app/api/wallet/deposit/route.ts
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/rbac";
 import crypto from "crypto";
@@ -92,7 +92,6 @@ export async function POST(request: Request) {
         wallet = await tx.wallet.create({
           data: {
             userId,
-            balanceMinor: BigInt(0),
             availableBalanceMinor: BigInt(0),
             status: WalletStatus.ACTIVE,
             currency: "GHS",
