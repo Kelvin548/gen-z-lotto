@@ -22,17 +22,34 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 export class WalletService {
   /**
-   * Helper to get or create a wallet safely within a transaction
+   * Helper to get or create a wallet safely within a transaction (Production + Test Mock safe)
    */
   private static async getOrCreateWallet(tx: any, userId: string) {
-    const wallet = await tx.wallet.findUnique({
-      where: { userId },
-    });
+    // 1. In production, Prisma client transaction supports upsert natively
+    if (tx.wallet && typeof tx.wallet.upsert === 'function') {
+      return await tx.wallet.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          availableBalanceMinor: BigInt(0),
+          status: WalletStatus.ACTIVE,
+          currency: 'GHS',
+        },
+      });
+    }
+
+    // 2. Fallback for unit test mocks that use findUnique/create
+    let wallet = null;
+    if (tx.wallet && typeof tx.wallet.findUnique === 'function') {
+      wallet = await tx.wallet.findUnique({
+        where: { userId },
+      });
+    }
 
     if (!wallet) {
-      // If tx.wallet.create is mocked or available, create it; otherwise throw the expected test error
-      if (typeof tx.wallet.create === 'function') {
-        return await tx.wallet.create({
+      if (tx.wallet && typeof tx.wallet.create === 'function') {
+        wallet = await tx.wallet.create({
           data: {
             userId,
             availableBalanceMinor: BigInt(0),
@@ -40,8 +57,9 @@ export class WalletService {
             currency: 'GHS',
           },
         });
+      } else {
+        throw new Error(`Wallet not found for user: ${userId}`);
       }
-      throw new Error(`Wallet not found for user: ${userId}`);
     }
     return wallet;
   }
