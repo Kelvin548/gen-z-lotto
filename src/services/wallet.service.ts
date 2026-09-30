@@ -36,13 +36,16 @@ export class WalletService {
     const options = typeof providerRefOrOptions === 'object' ? providerRefOrOptions : idempotencyKeyOrOptions;
 
     return await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({
+      const wallet = await tx.wallet.upsert({
         where: { userId },
+        update: {},
+        create: {
+          userId,
+          availableBalanceMinor: BigInt(0),
+          status: WalletStatus.ACTIVE,
+          currency: 'GHS',
+        },
       });
-
-      if (!wallet) {
-        throw new Error(`Wallet not found for user: ${userId}`);
-      }
 
       if (wallet.status !== WalletStatus.ACTIVE) {
         throw new Error(`Wallet is not active for user: ${userId}`);
@@ -128,8 +131,18 @@ export class WalletService {
     const options = typeof providerRefOrOptions === 'object' ? providerRefOrOptions : idempotencyKeyOrOptions;
 
     return await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({ where: { userId } });
-      if (!wallet || wallet.status !== WalletStatus.ACTIVE) {
+      const wallet = await tx.wallet.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          availableBalanceMinor: BigInt(0),
+          status: WalletStatus.ACTIVE,
+          currency: 'GHS',
+        },
+      });
+
+      if (wallet.status !== WalletStatus.ACTIVE) {
         throw new Error(`Active wallet not found for user: ${userId}`);
       }
       if (wallet.availableBalanceMinor < amountMinor) {
@@ -177,8 +190,18 @@ export class WalletService {
     options?: any
   ) {
     return await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({ where: { userId } });
-      if (!wallet || wallet.status !== WalletStatus.ACTIVE) {
+      const wallet = await tx.wallet.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          availableBalanceMinor: BigInt(0),
+          status: WalletStatus.ACTIVE,
+          currency: 'GHS',
+        },
+      });
+
+      if (wallet.status !== WalletStatus.ACTIVE) {
         throw new Error(`Active wallet not found for user: ${userId}`);
       }
       if (wallet.availableBalanceMinor < amountMinor) {
@@ -225,8 +248,16 @@ export class WalletService {
     options?: any
   ) {
     return await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({ where: { userId } });
-      if (!wallet) throw new Error(`Wallet not found for user: ${userId}`);
+      const wallet = await tx.wallet.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          availableBalanceMinor: BigInt(0),
+          status: WalletStatus.ACTIVE,
+          currency: 'GHS',
+        },
+      });
 
       if (wallet.availableBalanceMinor < amountMinor) {
         throw new Error('Insufficient wallet balance to place stake.');
@@ -285,13 +316,16 @@ export class WalletService {
     const options = typeof providerRefOrOptions === 'object' ? providerRefOrOptions : idempotencyKeyOrOptions;
 
     return await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({
+      const wallet = await tx.wallet.upsert({
         where: { userId },
+        update: {},
+        create: {
+          userId,
+          availableBalanceMinor: BigInt(0),
+          status: WalletStatus.ACTIVE,
+          currency: 'GHS',
+        },
       });
-
-      if (!wallet) {
-        throw new Error(`Wallet not found for user: ${userId}`);
-      }
 
       const finTx = await tx.financialTransaction.findUnique({
         where: { reference },
@@ -340,7 +374,7 @@ export class WalletService {
         },
       });
 
-    return Object.assign(updatedFinTx, {
+      return Object.assign(updatedFinTx, {
         transaction: updatedFinTx,
         updatedWallet,
         status: updatedFinTx.status,
@@ -361,13 +395,16 @@ export class WalletService {
     idempotencyKeyOrOptions?: any
   ) {
     return await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({
+      const wallet = await tx.wallet.upsert({
         where: { userId },
+        update: {},
+        create: {
+          userId,
+          availableBalanceMinor: BigInt(0),
+          status: WalletStatus.ACTIVE,
+          currency: 'GHS',
+        },
       });
-
-      if (!wallet) {
-        throw new Error(`Wallet not found for user: ${userId}`);
-      }
 
       let finTx: any = null;
       if (reference) {
