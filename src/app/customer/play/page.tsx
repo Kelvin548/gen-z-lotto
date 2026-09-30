@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function calculateCombinations(n: number, r: number): number {
   if (n < r) return 0;
@@ -64,6 +64,12 @@ function getNextDefaultDraw() {
 }
 
 export default function PlayArenaPage() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const defaultDraw = getNextDefaultDraw();
 
   const [selectedGameType, setSelectedGameType] = useState('Banker');
@@ -91,6 +97,10 @@ export default function PlayArenaPage() {
   ];
 
   const stakeOptions = [10, 20, 50, 89];
+
+  if (!isMounted) {
+    return null; // Prevents server/client mismatch during initial hydration
+  }
 
   const handleDrawChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const drawName = e.target.value;
@@ -294,7 +304,7 @@ export default function PlayArenaPage() {
 
       const data = await response.json();
 
-      if (!data.success) {
+      if (!response.ok || !data.success) {
         throw new Error(data.errors?.[0] || data.message || 'Payment initialization failed.');
       }
 
