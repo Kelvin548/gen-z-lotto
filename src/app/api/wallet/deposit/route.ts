@@ -84,12 +84,20 @@ export async function POST(request: Request) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({
+      let wallet = await tx.wallet.findUnique({
         where: { userId },
       });
 
       if (!wallet) {
-        throw new Error("WALLET_NOT_FOUND");
+        wallet = await tx.wallet.create({
+          data: {
+            userId,
+            balanceMinor: BigInt(0),
+            availableBalanceMinor: BigInt(0),
+            status: WalletStatus.ACTIVE,
+            currency: "GHS",
+          },
+        });
       }
 
       if (wallet.status !== WalletStatus.ACTIVE) {
@@ -147,13 +155,6 @@ export async function POST(request: Request) {
     );
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "";
-
-    if (errorMessage === "WALLET_NOT_FOUND") {
-      return NextResponse.json(
-        { success: false, errors: ["Wallet record not found for user."] },
-        { status: 404 }
-      );
-    }
 
     if (errorMessage === "WALLET_SUSPENDED") {
       return NextResponse.json(
