@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 
@@ -360,7 +360,7 @@ export default function PlayArenaPage() {
 
       <div className="bg-zinc-950/85 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">??</span>
+          <span className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black">🔑</span>
           <div>
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Have a Booking Code?</h4>
             <p className="text-[11px] text-zinc-400">Paste your code below to instantly load and review a stake.</p>
@@ -396,7 +396,7 @@ export default function PlayArenaPage() {
             >
               {drawsList.map((draw) => (
                 <option key={draw.name} value={draw.name}>
-                  {draw.name} � Closes at {draw.closingTime}
+                  {draw.name} — Closes at {draw.closingTime}
                 </option>
               ))}
             </select>
@@ -428,7 +428,7 @@ export default function PlayArenaPage() {
                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
                   {selectedGameType === 'Banker'
                     ? 'Pick Numbers (1 more)'
-                    : 3. Select Numbers (1 to 90) � Max: }
+                    : 3. Select Numbers (1 to 90) — Max: }
                 </h3>
               </div>
               <div className="flex items-center gap-3">
@@ -489,11 +489,11 @@ export default function PlayArenaPage() {
             <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
               <div className="flex justify-between text-zinc-300">
                 <span>Price:</span>
-                <span className="font-bold text-amber-400">GH? {baseTotalStake.toFixed(2)}</span>
+                <span className="font-bold text-amber-400">GH₵ {baseTotalStake.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Minimum Win:</span>
-                <span className="font-black text-emerald-400">GH? {minWin.toFixed(2)}</span>
+                <span className="font-black text-emerald-400">GH₵ {minWin.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
@@ -518,8 +518,8 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Amount (GH?):</span>
-
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Amount (GH₵):</span>
+              
               <div className="grid grid-cols-4 gap-2">
                 {stakeOptions.map((amount) => {
                   const isSelected = stakePerLine === amount;
@@ -537,7 +537,7 @@ export default function PlayArenaPage() {
 
               <div className="pt-2">
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">GH?</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">GH₵</span>
                   <input
                     type="number"
                     min="1"
@@ -553,7 +553,7 @@ export default function PlayArenaPage() {
             <div className="pt-3 border-t border-zinc-900 flex items-center justify-between">
               <span className="text-xs uppercase font-bold text-zinc-400">Final Payable:</span>
               <span className="text-xl font-black text-amber-400">
-                GH? {finalPayable.toFixed(2)}
+                GH₵ {finalPayable.toFixed(2)}
               </span>
             </div>
 
@@ -577,7 +577,7 @@ export default function PlayArenaPage() {
           <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-black text-white uppercase tracking-wider">Mobile Money Checkout</h3>
-              <button onClick={() => setIsPaymentModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">?</button>
+              <button onClick={() => setIsPaymentModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">✕</button>
             </div>
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
@@ -585,7 +585,7 @@ export default function PlayArenaPage() {
               {selectedGameType === 'Banker' && (
                 <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
               )}
-              <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH? {finalPayable.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
             </div>
 
             <div className="space-y-3">
@@ -619,7 +619,7 @@ export default function PlayArenaPage() {
               disabled={isProcessing}
               className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition disabled:opacity-50"
             >
-              {isProcessing ? 'Processing Payment...' : Authorize GH? }
+              {isProcessing ? 'Processing Payment...' : Authorize GH₵ }
             </button>
           </div>
         </div>
