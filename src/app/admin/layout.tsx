@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -21,17 +22,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="sticky top-0 z-50 border-b border-amber-500/20 bg-zinc-950/95 backdrop-blur-xl px-6 py-4 shadow-2xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-xl bg-amber-400 text-black font-black flex items-center justify-center text-sm shadow-lg shadow-amber-400/20">
-                Z
-              </div>
-              <span className="text-lg font-black tracking-wider text-amber-400">
-                GEN Z <span className="text-white">LOTTO</span>
+            <Link href="/admin/dashboard" className="flex items-center gap-2 group">
+              <Image 
+                src="/logo.png" 
+                alt="Gen Z Lotto Logo" 
+                width={38} 
+                height={38} 
+                className="w-[38px] h-[38px] object-contain rounded-full border border-yellow-500/30 shadow-[0_0_15px_rgba(255,215,0,0.3)]" 
+              />
+              <span className="text-sm font-black tracking-wider text-white flex items-center gap-2">
+                GEN Z LOTTO 
+                <span className="text-yellow-400 text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/25">ADMIN</span>
               </span>
             </Link>
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-[10px] font-black uppercase tracking-widest text-amber-400">
-              Admin
-            </span>
           </div>
 
           <nav className="hidden lg:flex items-center gap-6">
