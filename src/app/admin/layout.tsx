@@ -11,14 +11,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/draws', label: 'Manage Draws' },
     { href: '/admin/users', label: 'Users' },
     { href: '/admin/wallet', label: 'Wallet Ledger' },
-    { href: '/admin/results', label: 'Results' }, // This correctly points to your admin results page
+    { href: '/admin/results', label: 'Results' },
     { href: '/admin/tickets', label: 'My Tickets' },
   ];
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Admin Header Navigation Bar */}
-      <header className="sticky top-0 z-50 border-b border-amber-500/20 bg-zinc-950/90 backdrop-blur-md px-6 py-4">
+      {/* Master Admin Header */}
+      <header className="sticky top-0 z-50 border-b border-amber-500/20 bg-zinc-950/95 backdrop-blur-xl px-6 py-4 shadow-2xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/admin/dashboard" className="flex items-center gap-2">
