@@ -1,7 +1,7 @@
+// src/app/results/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 export default function CustomerResultsPage() {
   const [results, setResults] = useState<any[]>([]);
@@ -32,6 +32,8 @@ export default function CustomerResultsPage() {
                 <h3 className="text-base font-black text-amber-400">{res.drawName}</h3>
                 <span className="text-xs text-zinc-400 font-semibold">{res.date}</span>
               </div>
+              
+              {/* Winning Numbers */}
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Winning Numbers:</span>
                 <div className="flex gap-3">
@@ -42,6 +44,20 @@ export default function CustomerResultsPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Machine Numbers */}
+              {res.machineNumbers && res.machineNumbers.some((m: string) => m !== '--') && (
+                <div className="space-y-2 pt-2 border-t border-zinc-900">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Machine Numbers:</span>
+                  <div className="flex gap-3">
+                    {res.machineNumbers.map((m: string, i: number) => (
+                      <div key={i} className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs flex items-center justify-center">
+                        {m}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}
