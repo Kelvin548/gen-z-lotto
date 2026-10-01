@@ -1,6 +1,7 @@
 // src/app/admin/results/page.tsx
 'use client';
 
+// Admin results control panel active
 import { useState, useEffect } from 'react';
 
 const drawsList = [
