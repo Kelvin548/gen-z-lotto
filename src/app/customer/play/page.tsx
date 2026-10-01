@@ -1,4 +1,4 @@
-﻿'use client';
+﻿Set-Content -Path "src/app/customer/play/page.tsx" -Value 'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -14,31 +14,31 @@ function calculateCombinations(n: number, r: number): number {
 }
 
 const drawsList = [
-  { name: 'NLA VAG Monday', closingTime: '9:30 AM', timeString: '09:30', day: 'Monday' },
-  { name: 'Moon Rush Monday', closingTime: '1:00 PM', timeString: '13:00', day: 'Monday' },
-  { name: 'Monday Special', closingTime: '7:30 PM', timeString: '19:30', day: 'Monday' },
-  { name: 'NLA VAG Tuesday', closingTime: '9:30 AM', timeString: '09:30', day: 'Tuesday' },
-  { name: 'Moon Rush Tuesday', closingTime: '1:00 PM', timeString: '13:00', day: 'Tuesday' },
-  { name: 'Lucky Tuesday', closingTime: '7:30 PM', timeString: '19:30', day: 'Tuesday' },
-  { name: 'NLA VAG Wednesday', closingTime: '9:30 AM', timeString: '09:30', day: 'Wednesday' },
-  { name: 'Moon Rush Wednesday', closingTime: '1:00 PM', timeString: '13:00', day: 'Wednesday' },
-  { name: 'Midweek', closingTime: '7:30 PM', timeString: '19:30', day: 'Wednesday' },
-  { name: 'NLA VAG Thursday', closingTime: '9:30 AM', timeString: '09:30', day: 'Thursday' },
-  { name: 'Moon Rush Thursday', closingTime: '1:00 PM', timeString: '13:00', day: 'Thursday' },
-  { name: 'Fortune Thursday', closingTime: '7:30 PM', timeString: '19:30', day: 'Thursday' },
-  { name: 'NLA VAG Friday', closingTime: '9:30 AM', timeString: '09:30', day: 'Friday' },
-  { name: 'Moon Rush Friday', closingTime: '1:00 PM', timeString: '13:00', day: 'Friday' },
-  { name: 'Friday Bonanza', closingTime: '7:30 PM', timeString: '19:30', day: 'Friday' },
-  { name: 'NLA VAG Saturday', closingTime: '9:30 AM', timeString: '09:30', day: 'Saturday' },
-  { name: 'Moon Rush Saturday', closingTime: '1:00 PM', timeString: '13:00', day: 'Saturday' },
-  { name: 'National', closingTime: '7:30 PM', timeString: '19:30', day: 'Saturday' },
-  { name: 'Aseda Sunday', closingTime: '5:30 PM', timeString: '17:30', day: 'Sunday' }
+  { name: ''NLA VAG Monday'', closingTime: ''9:30 AM'', timeString: ''09:30'', day: ''Monday'' },
+  { name: ''Moon Rush Monday'', closingTime: ''1:00 PM'', timeString: ''13:00'', day: ''Monday'' },
+  { name: ''Monday Special'', closingTime: ''7:30 PM'', timeString: ''19:30'', day: ''Monday'' },
+  { name: ''NLA VAG Tuesday'', closingTime: ''9:30 AM'', timeString: ''09:30'', day: ''Tuesday'' },
+  { name: ''Moon Rush Tuesday'', closingTime: ''1:00 PM'', timeString: ''13:00'', day: ''Tuesday'' },
+  { name: ''Lucky Tuesday'', closingTime: ''7:30 PM'', timeString: ''19:30'', day: ''Tuesday'' },
+  { name: ''NLA VAG Wednesday'', closingTime: ''9:30 AM'', timeString: ''09:30'', day: ''Wednesday'' },
+  { name: ''Moon Rush Wednesday'', closingTime: ''1:00 PM'', timeString: ''13:00'', day: ''Wednesday'' },
+  { name: ''Midweek'', closingTime: ''7:30 PM'', timeString: ''19:30'', day: ''Wednesday'' },
+  { name: ''NLA VAG Thursday'', closingTime: ''9:30 AM'', timeString: ''09:30'', day: ''Thursday'' },
+  { name: ''Moon Rush Thursday'', closingTime: ''1:00 PM'', timeString: ''13:00'', day: ''Thursday'' },
+  { name: ''Fortune Thursday'', closingTime: ''7:30 PM'', timeString: ''19:30'', day: ''Thursday'' },
+  { name: ''NLA VAG Friday'', closingTime: ''9:30 AM'', timeString: ''09:30'', day: ''Friday'' },
+  { name: ''Moon Rush Friday'', closingTime: ''1:00 PM'', timeString: ''13:00'', day: ''Friday'' },
+  { name: ''Friday Bonanza'', closingTime: ''7:30 PM'', timeString: ''19:30'', day: ''Friday'' },
+  { name: ''NLA VAG Saturday'', closingTime: ''9:30 AM'', timeString: ''09:30'', day: ''Saturday'' },
+  { name: ''Moon Rush Saturday'', closingTime: ''1:00 PM'', timeString: ''13:00'', day: ''Saturday'' },
+  { name: ''National'', closingTime: ''7:30 PM'', timeString: ''19:30'', day: ''Saturday'' },
+  { name: ''Aseda Sunday'', closingTime: ''5:30 PM'', timeString: ''17:30'', day: ''Sunday'' }
 ];
 
 function getNextDefaultDraw() {
   const now = new Date();
   const currentDayIndex = now.getDay();
-  const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayMap = [''Sunday'', ''Monday'', ''Tuesday'', ''Wednesday'', ''Thursday'', ''Friday'', ''Saturday''];
   const todayName = dayMap[currentDayIndex];
   const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
 
@@ -51,7 +51,7 @@ function getNextDefaultDraw() {
   for (const targetDay of orderedDays) {
     const drawsOnDay = drawsList.filter(d => d.day === targetDay);
     for (const draw of drawsOnDay) {
-      const [hh, mm] = draw.timeString.split(':').map(Number);
+      const [hh, mm] = draw.timeString.split('':'' ).map(Number);
       const drawTimeMinutes = hh * 60 + mm;
 
       if (targetDay !== todayName || drawTimeMinutes > currentTimeMinutes) {
@@ -72,28 +72,28 @@ export default function PlayArenaPage() {
 
   const defaultDraw = getNextDefaultDraw();
 
-  const [selectedGameType, setSelectedGameType] = useState('Banker');
+  const [selectedGameType, setSelectedGameType] = useState(''Banker'');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [bankerNumber, setBankerNumber] = useState<number | null>(null);
 
   const [stakePerLine, setStakePerLine] = useState<number>(0);
-  const [customStakeInput, setCustomStakeInput] = useState<string>('');
+  const [customStakeInput, setCustomStakeInput] = useState<string>('''');
 
   const [selectedDraw, setSelectedDraw] = useState(defaultDraw.name);
   const [closingTime, setClosingTime] = useState(defaultDraw.closingTime);
 
-  const [searchBookingCode, setSearchBookingCode] = useState('');
+  const [searchBookingCode, setSearchBookingCode] = useState('''');
   const [searchedTicketResult, setSearchedTicketResult] = useState<any>(null);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [momoNumber, setMomoNumber] = useState('');
-  const [momoProvider, setMomoProvider] = useState('MTN');
+  const [momoNumber, setMomoNumber] = useState('''');
+  const [momoProvider, setMomoProvider] = useState(''MTN'');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const gameTypes = [
-    'Direct 1', 'Direct 2', 'Direct 3', 'Direct 4',
-    'Direct 5', 'Perm 2', 'Perm 3', 'Banker'
+    ''Direct 1'', ''Direct 2'', ''Direct 3'', ''Direct 4'',
+    ''Direct 5'', ''Perm 2'', ''Perm 3'', ''Banker''
   ];
 
   const stakeOptions = [10, 20, 50, 89];
@@ -113,31 +113,31 @@ export default function PlayArenaPage() {
 
   const getMaxNumbers = (type: string) => {
     switch (type) {
-      case 'Direct 1': return 1;
-      case 'Direct 2': return 2;
-      case 'Direct 3': return 3;
-      case 'Direct 4': return 4;
-      case 'Direct 5': return 5;
-      case 'Perm 2': return 25; 
-      case 'Perm 3': return 10; 
-      case 'Banker': return 1; 
+      case ''Direct 1'': return 1;
+      case ''Direct 2'': return 2;
+      case ''Direct 3'': return 3;
+      case ''Direct 4'': return 4;
+      case ''Direct 5'': return 5;
+      case ''Perm 2'': return 25; 
+      case ''Perm 3'': return 10; 
+      case ''Banker'': return 1; 
       default: return 10;
     }
   };
 
   const getRequiredSelectionSize = (type: string) => {
     switch (type) {
-      case 'Perm 2': return 2;
-      case 'Perm 3': return 3;
+      case ''Perm 2'': return 2;
+      case ''Perm 3'': return 3;
       default: return 1;
     }
   };
 
   const calculateTotalLines = () => {
-    if (selectedGameType === 'Banker') {
+    if (selectedGameType === ''Banker'') {
       return bankerNumber !== null ? 89 : 0;
     }
-    if (selectedGameType.startsWith('Perm')) {
+    if (selectedGameType.startsWith(''Perm'')) {
       const r = getRequiredSelectionSize(selectedGameType);
       return calculateCombinations(selectedNumbers.length, r);
     }
@@ -146,7 +146,7 @@ export default function PlayArenaPage() {
   };
 
   const totalLines = calculateTotalLines();
-  const baseTotalStake = selectedGameType === 'Banker'
+  const baseTotalStake = selectedGameType === ''Banker''
     ? (bankerNumber !== null ? totalLines * stakePerLine : 0)
     : (totalLines * stakePerLine);
 
@@ -154,7 +154,7 @@ export default function PlayArenaPage() {
   const finalPayable = baseTotalStake - discountAmount;
 
   const getPotentialWins = () => {
-    if (selectedGameType === 'Banker') {
+    if (selectedGameType === ''Banker'') {
       if (bankerNumber === null) return { minWin: 0, maxWin: 0 };
       const winVal = stakePerLine * 880; 
       return { minWin: winVal, maxWin: winVal };
@@ -163,16 +163,16 @@ export default function PlayArenaPage() {
     if (totalLines <= 0) return { minWin: 0, maxWin: 0 };
 
     let baseMultiplier = 220;
-    if (selectedGameType === 'Direct 1') baseMultiplier = 10;
-    if (selectedGameType === 'Direct 2') baseMultiplier = 220;
-    if (selectedGameType === 'Direct 3') baseMultiplier = 1800;
-    if (selectedGameType === 'Direct 4') baseMultiplier = 4500;
-    if (selectedGameType === 'Direct 5') baseMultiplier = 38000;
-    if (selectedGameType === 'Perm 2') baseMultiplier = 220;
-    if (selectedGameType === 'Perm 3') baseMultiplier = 1800;
+    if (selectedGameType === ''Direct 1'') baseMultiplier = 10;
+    if (selectedGameType === ''Direct 2'') baseMultiplier = 220;
+    if (selectedGameType === ''Direct 3'') baseMultiplier = 1800;
+    if (selectedGameType === ''Direct 4'') baseMultiplier = 4500;
+    if (selectedGameType === ''Direct 5'') baseMultiplier = 38000;
+    if (selectedGameType === ''Perm 2'') baseMultiplier = 220;
+    if (selectedGameType === ''Perm 3'') baseMultiplier = 1800;
 
     const minWin = stakePerLine * baseMultiplier;
-    const maxWin = selectedGameType.startsWith('Perm') ? totalLines * stakePerLine * baseMultiplier : minWin;
+    const maxWin = selectedGameType.startsWith(''Perm'') ? totalLines * stakePerLine * baseMultiplier : minWin;
     return { minWin, maxWin };
   };
 
@@ -185,7 +185,7 @@ export default function PlayArenaPage() {
   };
 
   const toggleNumber = (num: number) => {
-    if (selectedGameType === 'Banker') {
+    if (selectedGameType === ''Banker'') {
       if (bankerNumber === num) {
         setBankerNumber(null);
       } else {
@@ -209,7 +209,7 @@ export default function PlayArenaPage() {
   };
 
   const clearSelectedNumbers = () => {
-    if (selectedGameType === 'Banker') {
+    if (selectedGameType === ''Banker'') {
       setBankerNumber(null);
     } else {
       setSelectedNumbers([]);
@@ -234,45 +234,45 @@ export default function PlayArenaPage() {
 
   const handleSearchBookingCode = () => {
     if (!searchBookingCode.trim()) {
-      alert('Please enter a booking code to search.');
+      alert(''Please enter a booking code to search.'');
       return;
     }
-    const allTickets = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
+    const allTickets = JSON.parse(localStorage.getItem(''admin_all_tickets'') || ''[]'');
     const found = allTickets.find((t: any) => t.bookingCode === searchBookingCode.trim() || t.id === searchBookingCode.trim());
     if (found) {
       setSearchedTicketResult(found);
       setIsSearchModalOpen(true);
     } else {
-      alert('Booking code not found in active records.');
+      alert(''Booking code not found in active records.'');
     }
   };
 
   const handleOpenPaymentModal = () => {
-    if (selectedGameType === 'Banker') {
+    if (selectedGameType === ''Banker'') {
       if (bankerNumber === null) {
-        alert('Banker requires exactly 1 number selection.');
+        alert(''Banker requires exactly 1 number selection.'');
         return;
       }
-    } else if (selectedGameType.startsWith('Direct')) {
+    } else if (selectedGameType.startsWith(''Direct'')) {
       const requiredCount = getMaxNumbers(selectedGameType);
       if (selectedNumbers.length !== requiredCount) {
         alert(`${selectedGameType} requires exactly ${requiredCount} number(s). You have selected ${selectedNumbers.length}.`);
         return;
       }
-    } else if (selectedGameType === 'Perm 2' && selectedNumbers.length < 2) {
-      alert('Perm 2 requires at least 2 numbers selected.');
+    } else if (selectedGameType === ''Perm 2'' && selectedNumbers.length < 2) {
+      alert(''Perm 2 requires at least 2 numbers selected.'');
       return;
-    } else if (selectedGameType === 'Perm 3' && (selectedNumbers.length < 3 || selectedNumbers.length > 10)) {
-      alert('Perm 3 requires between 3 and 10 numbers selected.');
+    } else if (selectedGameType === ''Perm 3'' && (selectedNumbers.length < 3 || selectedNumbers.length > 10)) {
+      alert(''Perm 3 requires between 3 and 10 numbers selected.'');
       return;
     }
 
     if (totalLines <= 0) {
-      alert('Invalid selection for this game type.');
+      alert(''Invalid selection for this game type.'');
       return;
     }
     if (finalPayable <= 0) {
-      alert('Please enter a valid stake amount.');
+      alert(''Please enter a valid stake amount.'');
       return;
     }
     setIsPaymentModalOpen(true);
@@ -280,7 +280,7 @@ export default function PlayArenaPage() {
 
   const handleProcessMomoPayment = async () => {
     if (!momoNumber || momoNumber.length < 10) {
-      alert('Please enter a valid mobile money number.');
+      alert(''Please enter a valid mobile money number.'');
       return;
     }
 
@@ -289,14 +289,14 @@ export default function PlayArenaPage() {
     try {
       const amountMinor = Math.round(finalPayable * 100);
       const idempotencyKey = `dep-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      const currentUser = localStorage.getItem('active_username') || 'customer_user';
+      const currentUser = localStorage.getItem(''active_username'') || ''customer_user'';
 
-      const response = await fetch('/api/wallet/deposit', {
-        method: 'POST',
+      const response = await fetch(''/api/wallet/deposit'', {
+        method: ''POST'',
         headers: {
-          'Content-Type': 'application/json',
+          ''Content-Type'': ''application/json'',
         },
-        credentials: 'include',
+        credentials: ''include'',
         body: JSON.stringify({
           amountMinor: amountMinor,
           idempotencyKey: idempotencyKey,
@@ -306,7 +306,7 @@ export default function PlayArenaPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.errors?.[0] || data.message || 'Payment initialization failed.');
+        throw new Error(data.errors?.[0] || data.message || ''Payment initialization failed.'');
       }
 
       setIsProcessing(false);
@@ -315,7 +315,7 @@ export default function PlayArenaPage() {
       const storageKey = `user_tickets_${currentUser}`;
       const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      const ticketNumbers = selectedGameType === 'Banker' 
+      const ticketNumbers = selectedGameType === ''Banker'' 
         ? [bankerNumber] 
         : selectedNumbers;
 
@@ -326,7 +326,7 @@ export default function PlayArenaPage() {
         gameType: selectedGameType,
         gameName: selectedDraw,
         numbers: ticketNumbers,
-        bankerNumber: selectedGameType === 'Banker' ? bankerNumber : null,
+        bankerNumber: selectedGameType === ''Banker'' ? bankerNumber : null,
         secondaryNumbers: [],
         stakePerLine: stakePerLine,
         lines: totalLines,
@@ -337,15 +337,15 @@ export default function PlayArenaPage() {
         maxWin: maxWin,
         date: new Date().toLocaleDateString(),
         closingTime: closingTime,
-        status: 'Active',
+        status: ''Active'',
         paymentMethod: `${momoProvider} Momo (${momoNumber})`
       };
 
-      const existingTickets = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const existingTickets = JSON.parse(localStorage.getItem(storageKey) || ''[]'');
       localStorage.setItem(storageKey, JSON.stringify([newTicket, ...existingTickets]));
 
-      const masterLedger = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
-      localStorage.setItem('admin_all_tickets', JSON.stringify([newTicket, ...masterLedger]));
+      const masterLedger = JSON.parse(localStorage.getItem(''admin_all_tickets'') || ''[]'');
+      localStorage.setItem(''admin_all_tickets'', JSON.stringify([newTicket, ...masterLedger]));
 
       setSelectedNumbers([]);
       setBankerNumber(null);
@@ -354,11 +354,11 @@ export default function PlayArenaPage() {
         window.location.href = data.authorizationUrl;
       } else {
         alert(`Payment prompt initialized! Your Booking Code is: ${bookingCode}`);
-        window.location.href = '/customer/tickets';
+        window.location.href = ''/customer/tickets'';
       }
     } catch (error: any) {
       setIsProcessing(false);
-      alert(error.message || 'An error occurred during payment processing.');
+      alert(error.message || ''An error occurred during payment processing.'');
     }
   };
 
@@ -426,8 +426,8 @@ export default function PlayArenaPage() {
                     onClick={() => handleGameTypeChange(type)}
                     className={`py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border ${
                       isSelected
-                        ? 'bg-amber-400 border-amber-400 text-black shadow-lg shadow-amber-400/20 scale-[1.02]'
-                        : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-amber-500/40 hover:text-white'
+                        ? ''bg-amber-400 border-amber-400 text-black shadow-lg shadow-amber-400/20 scale-[1.02]''
+                        : ''bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-amber-500/40 hover:text-white''
                     }`}
                   >
                     {type}
@@ -441,13 +441,13 @@ export default function PlayArenaPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">
-                  {selectedGameType === 'Banker'
-                    ? 'Pick Numbers (1 more)'
+                  {selectedGameType === ''Banker''
+                    ? ''Pick Numbers (1 more)''
                     : `3. Select Numbers (1 to 90) — Max: ${getMaxNumbers(selectedGameType)}`}
                 </h3>
               </div>
               <div className="flex items-center gap-3">
-                {((selectedGameType === 'Banker' && bankerNumber !== null) || (selectedGameType !== 'Banker' && selectedNumbers.length > 0)) && (
+                {((selectedGameType === ''Banker'' && bankerNumber !== null) || (selectedGameType !== ''Banker'' && selectedNumbers.length > 0)) && (
                   <button
                     onClick={clearSelectedNumbers}
                     className="text-[11px] text-red-400 hover:text-red-300 font-bold uppercase transition"
@@ -455,9 +455,9 @@ export default function PlayArenaPage() {
                     Clear
                   </button>
                 )}
-                {selectedGameType === 'Banker' ? (
+                {selectedGameType === ''Banker'' ? (
                   <div className="text-xs text-zinc-400 font-semibold">
-                    Selected Number: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : 'None'}</strong>
+                    Selected Number: <strong className="text-amber-400">{bankerNumber !== null ? (bankerNumber < 10 ? `0${bankerNumber}` : bankerNumber) : ''None''}</strong>
                   </div>
                 ) : (
                   <span className="text-xs text-zinc-400 font-semibold">
@@ -469,12 +469,12 @@ export default function PlayArenaPage() {
 
             <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 max-h-[340px] overflow-y-auto pr-2 custom-scrollbar">
               {Array.from({ length: 90 }, (_, i) => i + 1).map((num) => {
-                const isBanker = selectedGameType === 'Banker' && bankerNumber === num;
-                const isSelectedStandard = selectedGameType !== 'Banker' && selectedNumbers.includes(num);
+                const isBanker = selectedGameType === ''Banker'' && bankerNumber === num;
+                const isSelectedStandard = selectedGameType !== ''Banker'' && selectedNumbers.includes(num);
 
-                let btnStyle = 'bg-zinc-900/90 border border-zinc-800 text-zinc-300 hover:border-amber-500/50 hover:text-white';
+                let btnStyle = ''bg-zinc-900/90 border border-zinc-800 text-zinc-300 hover:border-amber-500/50 hover:text-white'';
                 if (isBanker || isSelectedStandard) {
-                  btnStyle = 'bg-amber-400 text-black shadow-lg shadow-amber-400/30 scale-105 border-amber-300 ring-2 ring-amber-400';
+                  btnStyle = ''bg-amber-400 text-black shadow-lg shadow-amber-400/30 scale-105 border-amber-300 ring-2 ring-amber-400'';
                 }
 
                 return (
@@ -544,8 +544,8 @@ export default function PlayArenaPage() {
                       onClick={() => handlePresetSelect(amount)}
                       className={`py-2 rounded-xl text-xs font-black transition-all border ${
                         isSelected
-                          ? 'bg-amber-400 border-amber-400 text-black shadow-md shadow-amber-400/20'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40'
+                          ? ''bg-amber-400 border-amber-400 text-black shadow-md shadow-amber-400/20''
+                          : ''bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40''
                       }`}
                     >
                       {amount}
@@ -579,7 +579,7 @@ export default function PlayArenaPage() {
             <button
               onClick={handleOpenPaymentModal}
               disabled={
-                selectedGameType === 'Banker'
+                selectedGameType === ''Banker''
                   ? (bankerNumber === null || finalPayable <= 0)
                   : (selectedNumbers.length === 0 || totalLines <= 0 || finalPayable <= 0)
               }
@@ -601,7 +601,7 @@ export default function PlayArenaPage() {
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
               <div className="flex justify-between text-zinc-400"><span>Game Type:</span> <span className="text-white font-bold">{selectedGameType}</span></div>
-              {selectedGameType === 'Banker' && (
+              {selectedGameType === ''Banker'' && (
                 <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
               )}
               <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
@@ -610,14 +610,14 @@ export default function PlayArenaPage() {
             <div className="space-y-3">
               <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Select Mobile Network</label>
               <div className="grid grid-cols-2 gap-3">
-                {['MTN', 'Telecel'].map((prov) => (
+                {[''MTN'', ''Telecel''].map((prov) => (
                   <button
                     key={prov}
                     onClick={() => setMomoProvider(prov)}
                     className={`py-2.5 rounded-xl text-xs font-black border transition ${
                       momoProvider === prov
-                        ? 'bg-amber-400 border-amber-400 text-black'
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-300'
+                        ? ''bg-amber-400 border-amber-400 text-black''
+                        : ''bg-zinc-900 border-zinc-800 text-zinc-300''
                     }`}
                   >
                     {prov} MoMo
@@ -642,7 +642,7 @@ export default function PlayArenaPage() {
               disabled={isProcessing}
               className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition disabled:opacity-50"
             >
-              {isProcessing ? 'Processing Payment...' : `Authorize GH₵ ${finalPayable.toFixed(2)}`}
+              {isProcessing ? ''Processing Payment...'' : `Authorize GH₵ ${finalPayable.toFixed(2)}`}
             </button>
           </div>
         </div>
@@ -650,3 +650,4 @@ export default function PlayArenaPage() {
     </div>
   );
 }
+'
