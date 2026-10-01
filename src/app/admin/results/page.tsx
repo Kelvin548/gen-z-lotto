@@ -1,140 +1,246 @@
-// src/app/results/page.tsx
+// src/app/admin/results/page.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
-export default function PublicResultsPage() {
-  const [results, setResults] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+const drawsList = [
+  'NLA VAG Monday', 'Moon Rush Monday', 'Monday Special',
+  'NLA VAG Tuesday', 'Moon Rush Tuesday', 'Lucky Tuesday',
+  'NLA VAG Wednesday', 'Moon Rush Wednesday', 'Midweek',
+  'NLA VAG Thursday', 'Moon Rush Thursday', 'Fortune Thursday',
+  'NLA VAG Friday', 'Moon Rush Friday', 'Friday Bonanza',
+  'NLA VAG Saturday', 'Moon Rush Saturday', 'National', 'Aseda Sunday'
+];
+
+export default function AdminResultsPage() {
+  const [selectedDraw, setSelectedDraw] = useState(drawsList[0]);
+  const [drawDate, setDrawDate] = useState(new Date().toISOString().split('T')[0]);
+  const [winningNumbers, setWinningNumbers] = useState<string[]>(['', '', '', '', '']);
+  const [machineNumbers, setMachineNumbers] = useState<string[]>(['', '', '', '', '']);
+  const [publishedResults, setPublishedResults] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('admin_published_results');
     if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setResults(Array.isArray(parsed) ? parsed : []);
-      } catch (e) {
-        console.error(e);
-      }
+      setPublishedResults(JSON.parse(saved));
     }
   }, []);
 
-  const filteredResults = results.filter((res) => 
-    res.drawName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    res.date?.includes(searchTerm)
-  );
+  const saveAndSync = (updated: any[]) => {
+    setPublishedResults(updated);
+    localStorage.setItem('admin_published_results', JSON.stringify(updated));
+  };
+
+  const handleWinNumChange = (index: number, val: string) => {
+    const updated = [...winningNumbers];
+    updated[index] = val;
+    setWinningNumbers(updated);
+  };
+
+  const handleMachNumChange = (index: number, val: string) => {
+    const updated = [...machineNumbers];
+    updated[index] = val;
+    setMachineNumbers(updated);
+  };
+
+  const handlePublish = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (winningNumbers.some(num => !num)) {
+      alert('Please fill in all 5 winning numbers.');
+      return;
+    }
+
+    const formattedWinning = winningNumbers.map(n => n.padStart(2, '0'));
+    const formattedMachine = machineNumbers.map(n => n ? n.padStart(2, '0') : '--');
+
+    let updatedList;
+    if (editingId) {
+      // Edit existing result
+      updatedList = publishedResults.map(res => 
+        res.id === editingId 
+          ? { ...res, drawName: selectedDraw, date: drawDate, winningNumbers: formattedWinning, machineNumbers: formattedMachine }
+          : res
+      );
+      alert(`Winning numbers successfully updated for ${selectedDraw}!`);
+      setEditingId(null);
+    } else {
+      // Create new result
+      const newResult = {
+        id: `RES-${Date.now()}`,
+        drawName: selectedDraw,
+        date: drawDate,
+        winningNumbers: formattedWinning,
+        machineNumbers: formattedMachine,
+      };
+      updatedList = [newResult, ...publishedResults];
+      alert(`Winning numbers successfully published for ${selectedDraw}!`);
+    }
+
+    saveAndSync(updatedList);
+    setWinningNumbers(['', '', '', '', '']);
+    setMachineNumbers(['', '', '', '', '']);
+  };
+
+  const handleEdit = (res: any) => {
+    setEditingId(res.id);
+    setSelectedDraw(res.drawName);
+    setDrawDate(res.date);
+    setWinningNumbers(res.winningNumbers);
+    setMachineNumbers(res.machineNumbers.map((m: string) => m === '--' ? '' : m));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this result? It will be removed from the customer portal.')) {
+      const updated = publishedResults.filter(res => res.id !== id);
+      saveAndSync(updated);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#0b0b0c] text-zinc-100 flex flex-col px-6 py-10 max-w-6xl mx-auto w-full space-y-10 selection:bg-yellow-500 selection:text-black">
-      
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-yellow-500/20 pb-6 gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-ping"></span>
-            Verified 5/90 Draws
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">National Draw Results</h1>
-          <p className="text-xs md:text-sm text-zinc-400 mt-1">Official certified winning numbers and machine ball drops.</p>
-        </div>
-        <Link 
-          href="/" 
-          className="text-xs font-bold px-5 py-2.5 rounded-xl bg-zinc-900 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500 hover:text-black transition-all duration-300 shadow-lg shadow-yellow-500/10"
-        >
-          ← Back Home
-        </Link>
+    <div className="space-y-8 relative z-10 p-6 max-w-5xl mx-auto text-white">
+      <div>
+        <h2 className="text-3xl font-black tracking-tight mb-1">Admin Results Management</h2>
+        <p className="text-xs text-zinc-400">Publish, edit, or delete winning and machine numbers for customer viewing.</p>
       </div>
 
-      {/* Search & Filter Bar */}
-      {results.length > 0 && (
-        <div className="w-full">
-          <input
-            type="text"
-            placeholder="Search by draw name (e.g., VAG, Monday) or date..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-5 py-3.5 rounded-2xl bg-zinc-950/80 border border-yellow-500/20 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition shadow-inner"
-          />
+      <form onSubmit={handlePublish} className="bg-zinc-950/80 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-6 shadow-2xl space-y-6">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <h3 className="text-base font-bold text-amber-400">
+            {editingId ? 'Edit Published Result' : 'Publish New Draw Result'}
+          </h3>
+          {editingId && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingId(null);
+                setWinningNumbers(['', '', '', '', '']);
+                setMachineNumbers(['', '', '', '', '']);
+              }}
+              className="text-xs text-zinc-400 hover:text-white cursor-pointer"
+            >
+              Cancel Edit
+            </button>
+          )}
         </div>
-      )}
 
-      {/* Results List */}
-      <div className="space-y-6">
-        {filteredResults.length === 0 ? (
-          <div className="text-center py-24 bg-zinc-950/50 border border-yellow-500/15 rounded-3xl text-zinc-500 text-sm space-y-3 backdrop-blur-md">
-            <div className="text-3xl">🎫</div>
-            <p>No draw results found or published yet.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Select Draw Name</label>
+            <select
+              value={selectedDraw}
+              onChange={(e) => setSelectedDraw(e.target.value)}
+              className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-3.5 text-sm font-semibold text-white focus:outline-none focus:border-amber-400 cursor-pointer"
+            >
+              {drawsList.map((draw) => (
+                <option key={draw} value={draw}>{draw}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Draw Date</label>
+            <input
+              type="date"
+              value={drawDate}
+              onChange={(e) => setDrawDate(e.target.value)}
+              className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-3.5 text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Winning Numbers (5 Numbers)</label>
+          <div className="grid grid-cols-5 gap-3">
+            {winningNumbers.map((num, idx) => (
+              <input
+                key={idx}
+                type="number"
+                min="1"
+                max="90"
+                placeholder={`#${idx + 1}`}
+                value={num}
+                onChange={(e) => handleWinNumChange(idx, e.target.value)}
+                className="h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-center text-lg font-black text-amber-400 focus:outline-none focus:border-amber-400"
+                required
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Machine Numbers (Optional / 5 Numbers)</label>
+          <div className="grid grid-cols-5 gap-3">
+            {machineNumbers.map((num, idx) => (
+              <input
+                key={idx}
+                type="number"
+                min="1"
+                max="90"
+                placeholder={`M${idx + 1}`}
+                value={num}
+                onChange={(e) => handleMachNumChange(idx, e.target.value)}
+                className="h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-center text-lg font-bold text-zinc-300 focus:outline-none focus:border-amber-400"
+              />
+            ))}
+          </div>
+        </div>
+
+        <button
+          type="init"
+          type-submit="true"
+          type="submit"
+          className="w-full py-4 rounded-2xl bg-amber-400 text-black font-black text-xs uppercase tracking-wider hover:bg-amber-300 transition shadow-lg shadow-amber-400/25 cursor-pointer"
+        >
+          {editingId ? 'Update Published Result' : 'Publish Results to Customer Dashboard'}
+        </button>
+      </form>
+
+      {/* Published Results Management History */}
+      <div className="space-y-4 pt-4">
+        <h3 className="text-lg font-black text-white">Published Results History</h3>
+        {publishedResults.length === 0 ? (
+          <div className="text-center py-10 bg-zinc-950/60 border border-zinc-800 rounded-3xl text-zinc-500 text-xs">
+            No results published yet.
           </div>
         ) : (
-          filteredResults.map((res, index) => (
-            <div 
-              key={res.id || index} 
-              className="p-6 md:p-8 rounded-3xl bg-zinc-950/90 border border-yellow-500/25 hover:border-yellow-500/50 transition-all duration-300 shadow-xl shadow-black/60 relative overflow-hidden group space-y-6"
-            >
-              {/* Subtle Ambient Glow on Hover */}
-              <div className="absolute -right-20 -top-20 w-48 h-48 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-yellow-500/10 transition" />
-
-              {/* Card Top Row */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-900 pb-4">
+          publishedResults.map((res) => (
+            <div key={res.id} className="bg-zinc-950/85 border border-zinc-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-400 font-black text-xs">
-                    590
-                  </div>
-                  <div>
-                    <h2 className="font-black text-white text-lg tracking-wide">{res.drawName}</h2>
-                    <span className="text-xs text-zinc-400 font-medium">Draw Date: {res.date}</span>
-                  </div>
+                  <span className="text-base font-black text-amber-400">{res.drawName}</span>
+                  <span className="text-xs text-zinc-400">({res.date})</span>
                 </div>
-                <span className="self-start sm:self-auto text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black uppercase tracking-wider shadow-md shadow-yellow-500/20">
-                  Official Result
-                </span>
-              </div>
-
-              {/* Winning Numbers Section */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold text-yellow-400 uppercase tracking-widest flex items-center gap-1.5">
-                    <span>⚡</span> Winning Numbers (Winning)
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {res.winningNumbers?.map((num: string, idx: number) => (
-                    <div 
-                      key={idx} 
-                      className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 text-black font-black flex items-center justify-center text-base md:text-lg shadow-lg shadow-amber-500/30 border border-yellow-200 transform hover:scale-105 transition"
-                    >
-                      {num}
-                    </div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <span className="text-zinc-500 font-bold">Win:</span>
+                  {res.winningNumbers.map((n: string, i: number) => (
+                    <span key={i} className="px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20 font-bold">{n}</span>
+                  ))}
+                  <span className="text-zinc-500 font-bold ml-2">Mach:</span>
+                  {res.machineNumbers.map((m: string, i: number) => (
+                    <span key={i} className="px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-800">{m}</span>
                   ))}
                 </div>
               </div>
-
-              {/* Machine Numbers Section */}
-              {res.machineNumbers && res.machineNumbers.some((m: string) => m && m !== '--') && (
-                <div className="space-y-3 pt-4 border-t border-zinc-900/80">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
-                      <span>⚙️</span> Machine Numbers
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2.5">
-                    {res.machineNumbers.map((m: string, idx: number) => (
-                      <div 
-                        key={idx} 
-                        className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs md:text-sm flex items-center justify-center shadow-inner"
-                      >
-                        {m}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => handleEdit(res)}
+                  className="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500/25 transition cursor-pointer"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(res.id)}
+                  className="px-4 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/25 transition cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))
         )}
       </div>
-
     </div>
   );
 }
