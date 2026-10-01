@@ -1,3 +1,4 @@
+// src/app/customer/dashboard/page.tsx (or your dashboard page)
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -44,7 +45,7 @@ export default function CustomerDashboardPage() {
         {/* Clean Root-Level Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-zinc-300">
           <Link href="/how-it-works" className="hover:text-yellow-400 transition">How It Works</Link>
-          <Link href="/results" className="hover:text-yellow-400 transition">Results</Link>
+          <Link href="/customer/results" className="hover:text-yellow-400 transition">Results</Link>
           <Link href="/pricing" className="hover:text-yellow-400 transition">Pricing & Odds</Link>
           <Link href="/responsible-gaming" className="hover:text-yellow-400 transition">Responsible Gaming</Link>
         </nav>
@@ -118,7 +119,7 @@ export default function CustomerDashboardPage() {
             Play Live Draw Now →
           </Link>
           <Link
-            href="/results"
+            href="/customer/results"
             className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-zinc-900/90 border border-yellow-500/30 text-yellow-400 font-extrabold text-sm uppercase tracking-wider hover:bg-zinc-900 transition text-center backdrop-blur-md"
           >
             View Latest Results
@@ -153,7 +154,7 @@ export default function CustomerDashboardPage() {
         <div>GEN Z LOTTO © 2026</div>
         <div className="flex items-center gap-6">
           <Link href="/how-it-works" className="hover:text-zinc-300 transition">Terms & Conditions</Link>
-          <Link href="/results" className="hover:text-zinc-300 transition">Results</Link>
+          <Link href="/customer/results" className="hover:text-zinc-300 transition">Results</Link>
           <Link href="/responsible-gaming" className="hover:text-zinc-300 transition">Responsible Gaming</Link>
           <Link href="/pricing" className="hover:text-zinc-300 transition">Pricing & Odds</Link>
         </div>
