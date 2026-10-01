@@ -107,10 +107,10 @@ export default function AdminResultsPage() {
       {/* Header */}
       <div className="border-b border-yellow-500/20 pb-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-2">
-          <span>⚙️</span> Control Center
+          <span>⚙️</span> Admin Control Panel
         </div>
-        <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">Admin Results Management</h2>
-        <p className="text-xs md:text-sm text-zinc-400 mt-1">Publish, edit, or delete official winning and machine numbers for customer viewing.</p>
+        <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">Publish & Manage Results</h2>
+        <p className="text-xs md:text-sm text-zinc-400 mt-1">Input official daily winning numbers and machine ball drops for customer viewing.</p>
       </div>
 
       {/* Input / Publish Form */}
