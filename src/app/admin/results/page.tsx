@@ -23,7 +23,12 @@ export default function AdminResultsPage() {
   useEffect(() => {
     const saved = localStorage.getItem('admin_published_results');
     if (saved) {
-      setPublishedResults(JSON.parse(saved));
+      try {
+        const parsed = JSON.parse(saved);
+        setPublishedResults(Array.isArray(parsed) ? parsed : []);
+      } catch (e) {
+        console.error(e);
+      }
     }
   }, []);
 
@@ -56,7 +61,6 @@ export default function AdminResultsPage() {
 
     let updatedList;
     if (editingId) {
-      // Edit existing result
       updatedList = publishedResults.map(res => 
         res.id === editingId 
           ? { ...res, drawName: selectedDraw, date: drawDate, winningNumbers: formattedWinning, machineNumbers: formattedMachine }
@@ -65,7 +69,6 @@ export default function AdminResultsPage() {
       alert(`Winning numbers successfully updated for ${selectedDraw}!`);
       setEditingId(null);
     } else {
-      // Create new result
       const newResult = {
         id: `RES-${Date.now()}`,
         drawName: selectedDraw,
@@ -100,15 +103,23 @@ export default function AdminResultsPage() {
 
   return (
     <div className="space-y-8 relative z-10 p-6 max-w-5xl mx-auto text-white">
-      <div>
-        <h2 className="text-3xl font-black tracking-tight mb-1">Admin Results Management</h2>
-        <p className="text-xs text-zinc-400">Publish, edit, or delete winning and machine numbers for customer viewing.</p>
+      
+      {/* Header */}
+      <div className="border-b border-yellow-500/20 pb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-2">
+          <span>⚙️</span> Control Center
+        </div>
+        <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">Admin Results Management</h2>
+        <p className="text-xs md:text-sm text-zinc-400 mt-1">Publish, edit, or delete official winning and machine numbers for customer viewing.</p>
       </div>
 
-      <form onSubmit={handlePublish} className="bg-zinc-950/80 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-6 shadow-2xl space-y-6">
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-          <h3 className="text-base font-bold text-amber-400">
-            {editingId ? 'Edit Published Result' : 'Publish New Draw Result'}
+      {/* Input / Publish Form */}
+      <form onSubmit={handlePublish} className="bg-zinc-950/90 backdrop-blur-xl border border-yellow-500/30 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex items-center justify-between border-b border-zinc-900 pb-4 relative z-10">
+          <h3 className="text-base font-black text-yellow-400 tracking-wide">
+            {editingId ? '✏️ Edit Published Result' : '➕ Publish New Draw Result'}
           </h3>
           {editingId && (
             <button
@@ -118,40 +129,51 @@ export default function AdminResultsPage() {
                 setWinningNumbers(['', '', '', '', '']);
                 setMachineNumbers(['', '', '', '', '']);
               }}
-              className="text-xs text-zinc-400 hover:text-white cursor-pointer"
+              className="text-xs text-zinc-400 hover:text-white cursor-pointer font-bold underline"
             >
               Cancel Edit
             </button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Dropdown selectors for Draw Name & Date Picker */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Select Draw Name</label>
-            <select
-              value={selectedDraw}
-              onChange={(e) => setSelectedDraw(e.target.value)}
-              className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-3.5 text-sm font-semibold text-white focus:outline-none focus:border-amber-400 cursor-pointer"
-            >
-              {drawsList.map((draw) => (
-                <option key={draw} value={draw}>{draw}</option>
-              ))}
-            </select>
+            <label className="text-xs font-extrabold uppercase tracking-widest text-yellow-400">Select Draw Name</label>
+            <div className="relative">
+              <select
+                value={selectedDraw}
+                onChange={(e) => setSelectedDraw(e.target.value)}
+                className="w-full rounded-2xl bg-zinc-900 border border-yellow-500/20 p-4 text-sm font-bold text-white focus:outline-none focus:border-yellow-400 cursor-pointer appearance-none shadow-inner"
+              >
+                {drawsList.map((draw) => (
+                  <option key={draw} value={draw} className="bg-zinc-900 text-white">{draw}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-yellow-400">
+                ▼
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Draw Date</label>
-            <input
-              type="date"
-              value={drawDate}
-              onChange={(e) => setDrawDate(e.target.value)}
-              className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-3.5 text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
-            />
+            <label className="text-xs font-extrabold uppercase tracking-widest text-yellow-400">Draw Date</label>
+            <div className="relative">
+              <input
+                type="date"
+                value={drawDate}
+                onChange={(e) => setDrawDate(e.target.value)}
+                className="w-full rounded-2xl bg-zinc-900 border border-yellow-500/20 p-4 text-sm font-bold text-white focus:outline-none focus:border-yellow-400 cursor-pointer shadow-inner uppercase tracking-wider"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Winning Numbers (5 Numbers)</label>
+        {/* Winning Numbers Input Matrix */}
+        <div className="space-y-3 relative z-10">
+          <label className="text-xs font-extrabold uppercase tracking-widest text-yellow-400 flex items-center gap-1.5">
+            <span>⚡</span> Winning Numbers (5 Numbers Required)
+          </label>
           <div className="grid grid-cols-5 gap-3">
             {winningNumbers.map((num, idx) => (
               <input
@@ -162,15 +184,18 @@ export default function AdminResultsPage() {
                 placeholder={`#${idx + 1}`}
                 value={num}
                 onChange={(e) => handleWinNumChange(idx, e.target.value)}
-                className="h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-center text-lg font-black text-amber-400 focus:outline-none focus:border-amber-400"
+                className="h-16 rounded-2xl bg-zinc-900 border border-yellow-500/30 text-center text-xl font-black text-yellow-400 focus:outline-none focus:border-yellow-400 shadow-inner"
                 required
               />
             ))}
           </div>
         </div>
 
-        <div className="space-y-3">
-          <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Machine Numbers (Optional / 5 Numbers)</label>
+        {/* Machine Numbers Input Matrix */}
+        <div className="space-y-3 relative z-10 pt-2 border-t border-zinc-900">
+          <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+            <span>⚙️</span> Machine Numbers (Optional / 5 Balls)
+          </label>
           <div className="grid grid-cols-5 gap-3">
             {machineNumbers.map((num, idx) => (
               <input
@@ -181,64 +206,69 @@ export default function AdminResultsPage() {
                 placeholder={`M${idx + 1}`}
                 value={num}
                 onChange={(e) => handleMachNumChange(idx, e.target.value)}
-                className="h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-center text-lg font-bold text-zinc-300 focus:outline-none focus:border-amber-400"
+                className="h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-center text-base font-bold text-zinc-300 focus:outline-none focus:border-yellow-400 shadow-inner"
               />
             ))}
           </div>
         </div>
 
         <button
-          type="init"
-          type-submit="true"
           type="submit"
-          className="w-full py-4 rounded-2xl bg-amber-400 text-black font-black text-xs uppercase tracking-wider hover:bg-amber-300 transition shadow-lg shadow-amber-400/25 cursor-pointer"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black text-xs uppercase tracking-wider hover:opacity-90 transition shadow-lg shadow-yellow-500/20 cursor-pointer"
         >
-          {editingId ? 'Update Published Result' : 'Publish Results to Customer Dashboard'}
+          {editingId ? 'Update Published Result' : 'Publish Results to Customer Dashboard →'}
         </button>
       </form>
 
-      {/* Published Results Management History */}
-      <div className="space-y-4 pt-4">
-        <h3 className="text-lg font-black text-white">Published Results History</h3>
+      {/* Published History & Management Grid */}
+      <div className="space-y-6 pt-4">
+        <h3 className="text-xl font-black text-white">Manage Existing Published Results</h3>
         {publishedResults.length === 0 ? (
-          <div className="text-center py-10 bg-zinc-950/60 border border-zinc-800 rounded-3xl text-zinc-500 text-xs">
-            No results published yet.
+          <div className="text-center py-16 bg-zinc-950/50 border border-zinc-800 rounded-3xl text-zinc-500 text-xs">
+            No results published yet. Use the form above to add your first draw result.
           </div>
         ) : (
-          publishedResults.map((res) => (
-            <div key={res.id} className="bg-zinc-950/85 border border-zinc-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-base font-black text-amber-400">{res.drawName}</span>
-                  <span className="text-xs text-zinc-400">({res.date})</span>
+          <div className="space-y-4">
+            {publishedResults.map((res) => (
+              <div key={res.id} className="bg-zinc-950/85 border border-yellow-500/20 hover:border-yellow-500/40 transition rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-base font-black text-white">{res.drawName}</span>
+                    <span className="text-xs px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-bold">{res.date}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs items-center">
+                    <span className="text-zinc-500 font-extrabold uppercase text-[10px]">Win:</span>
+                    {res.winningNumbers.map((n: string, i: number) => (
+                      <span key={i} className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-200 to-yellow-500 text-black font-black text-xs flex items-center justify-center shadow">
+                        {n}
+                      </span>
+                    ))}
+                    <span className="text-zinc-500 font-extrabold uppercase text-[10px] ml-3">Mach:</span>
+                    {res.machineNumbers.map((m: string, i: number) => (
+                      <span key={i} className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs flex items-center justify-center">
+                        {m}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="text-zinc-500 font-bold">Win:</span>
-                  {res.winningNumbers.map((n: string, i: number) => (
-                    <span key={i} className="px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20 font-bold">{n}</span>
-                  ))}
-                  <span className="text-zinc-500 font-bold ml-2">Mach:</span>
-                  {res.machineNumbers.map((m: string, i: number) => (
-                    <span key={i} className="px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-800">{m}</span>
-                  ))}
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    onClick={() => handleEdit(res)}
+                    className="px-5 py-2.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-bold hover:bg-yellow-500 hover:text-black transition cursor-pointer shadow"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(res.id)}
+                    className="px-5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500 hover:text-white transition cursor-pointer shadow"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => handleEdit(res)}
-                  className="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500/25 transition cursor-pointer"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(res.id)}
-                  className="px-4 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/25 transition cursor-pointer"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>
