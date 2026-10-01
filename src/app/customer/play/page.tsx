@@ -1,4 +1,5 @@
-﻿'use client';
+﻿// src/app/customer/play/page.tsx
+'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -13,7 +14,7 @@ function calculateCombinations(n: number, r: number): number {
   return numerator / denominator;
 }
 
-const drawsList = [
+const defaultDrawsList = [
   { name: 'NLA VAG Monday', closingTime: '9:30 AM', timeString: '09:30', day: 'Monday' },
   { name: 'Moon Rush Monday', closingTime: '1:00 PM', timeString: '13:00', day: 'Monday' },
   { name: 'Monday Special', closingTime: '7:30 PM', timeString: '19:30', day: 'Monday' },
@@ -35,42 +36,9 @@ const drawsList = [
   { name: 'Aseda Sunday', closingTime: '5:30 PM', timeString: '17:30', day: 'Sunday' }
 ];
 
-function getNextDefaultDraw() {
-  const now = new Date();
-  const currentDayIndex = now.getDay();
-  const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const todayName = dayMap[currentDayIndex];
-  const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
-
-  const orderedDays = [];
-  for (let i = 0; i < 7; i++) {
-    const idx = (currentDayIndex + i) % 7;
-    orderedDays.push(dayMap[idx]);
-  }
-
-  for (const targetDay of orderedDays) {
-    const drawsOnDay = drawsList.filter(d => d.day === targetDay);
-    for (const draw of drawsOnDay) {
-      const [hh, mm] = draw.timeString.split(':').map(Number);
-      const drawTimeMinutes = hh * 60 + mm;
-
-      if (targetDay !== todayName || drawTimeMinutes > currentTimeMinutes) {
-        return draw;
-      }
-    }
-  }
-
-  return drawsList[0];
-}
-
 export default function PlayArenaPage() {
   const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const defaultDraw = getNextDefaultDraw();
+  const [drawsList, setDrawsList] = useState<any[]>(defaultDrawsList);
 
   const [selectedGameType, setSelectedGameType] = useState('Banker');
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
@@ -79,8 +47,8 @@ export default function PlayArenaPage() {
   const [stakePerLine, setStakePerLine] = useState<number>(0);
   const [customStakeInput, setCustomStakeInput] = useState<string>('');
 
-  const [selectedDraw, setSelectedDraw] = useState(defaultDraw.name);
-  const [closingTime, setClosingTime] = useState(defaultDraw.closingTime);
+  const [selectedDraw, setSelectedDraw] = useState('');
+  const [closingTime, setClosingTime] = useState('');
 
   const [searchBookingCode, setSearchBookingCode] = useState('');
   const [searchedTicketResult, setSearchedTicketResult] = useState<any>(null);
@@ -90,6 +58,35 @@ export default function PlayArenaPage() {
   const [momoNumber, setMomoNumber] = useState('');
   const [momoProvider, setMomoProvider] = useState('MTN');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    // Load dynamic active draws created by admin from localStorage
+    const savedAdminDraws = localStorage.getItem('gen_z_lotto_active_draws');
+    if (savedAdminDraws) {
+      try {
+        const parsed = JSON.parse(savedAdminDraws);
+        if (parsed && parsed.length > 0) {
+          const formatted = parsed.map((d: any) => ({
+            name: d.gameType,
+            closingTime: d.closingTime,
+            timeString: '19:30',
+            day: 'Today'
+          }));
+          setDrawsList(formatted);
+          setSelectedDraw(formatted[0].name);
+          setClosingTime(formatted[0].closingTime);
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Fallback to default next draw if no admin draws exist
+    setSelectedDraw(defaultDrawsList[0].name);
+    setClosingTime(defaultDrawsList[0].closingTime);
+  }, []);
 
   const gameTypes = [
     'Direct 1', 'Direct 2', 'Direct 3', 'Direct 4',
@@ -387,7 +384,7 @@ export default function PlayArenaPage() {
           />
           <button
             onClick={handleSearchBookingCode}
-            className="rounded-xl bg-amber-400 px-5 py-2.5 text-black text-xs font-black uppercase tracking-wider hover:bg-amber-300 transition shrink-0"
+            className="rounded-xl bg-amber-400 px-5 py-2.5 text-black text-xs font-black uppercase tracking-wider hover:bg-amber-300 transition shrink-0 cursor-pointer"
           >
             Search
           </button>
@@ -403,7 +400,7 @@ export default function PlayArenaPage() {
             <select 
               value={selectedDraw} 
               onChange={handleDrawChange}
-              className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white text-sm font-semibold focus:outline-none focus:border-amber-400 transition-all"
+              className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white text-sm font-semibold focus:outline-none focus:border-amber-400 transition-all cursor-pointer"
             >
               {drawsList.map((draw) => (
                 <option key={draw.name} value={draw.name}>
@@ -424,7 +421,7 @@ export default function PlayArenaPage() {
                   <button
                     key={type}
                     onClick={() => handleGameTypeChange(type)}
-                    className={`py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border ${
+                    className={`py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border cursor-pointer ${
                       isSelected
                         ? 'bg-amber-400 border-amber-400 text-black shadow-lg shadow-amber-400/20 scale-[1.02]'
                         : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-amber-500/40 hover:text-white'
@@ -450,7 +447,7 @@ export default function PlayArenaPage() {
                 {((selectedGameType === 'Banker' && bankerNumber !== null) || (selectedGameType !== 'Banker' && selectedNumbers.length > 0)) && (
                   <button
                     onClick={clearSelectedNumbers}
-                    className="text-[11px] text-red-400 hover:text-red-300 font-bold uppercase transition"
+                    className="text-[11px] text-red-400 hover:text-red-300 font-bold uppercase transition cursor-pointer"
                   >
                     Clear
                   </button>
@@ -481,7 +478,7 @@ export default function PlayArenaPage() {
                   <button
                     key={num}
                     onClick={() => toggleNumber(num)}
-                    className={`h-11 rounded-xl font-black text-xs transition-all flex items-center justify-center ${btnStyle}`}
+                    className={`h-11 rounded-xl font-black text-xs transition-all flex items-center justify-center cursor-pointer ${btnStyle}`}
                   >
                     {num < 10 ? `0${num}` : num}
                   </button>
@@ -542,7 +539,7 @@ export default function PlayArenaPage() {
                     <button
                       key={amount}
                       onClick={() => handlePresetSelect(amount)}
-                      className={`py-2 rounded-xl text-xs font-black transition-all border ${
+                      className={`py-2 rounded-xl text-xs font-black transition-all border cursor-pointer ${
                         isSelected
                           ? 'bg-amber-400 border-amber-400 text-black shadow-md shadow-amber-400/20'
                           : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-amber-500/40'
@@ -583,7 +580,7 @@ export default function PlayArenaPage() {
                   ? (bankerNumber === null || finalPayable <= 0)
                   : (selectedNumbers.length === 0 || totalLines <= 0 || finalPayable <= 0)
               }
-              className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all active:scale-[0.98]"
+              className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 py-4 font-black text-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 disabled:opacity-50 transition-all active:scale-[0.98] cursor-pointer"
             >
               Play Game
             </button>
@@ -596,7 +593,7 @@ export default function PlayArenaPage() {
           <div className="bg-zinc-950 border border-amber-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-black text-white uppercase tracking-wider">Mobile Money Checkout</h3>
-              <button onClick={() => setIsPaymentModalOpen(false)} className="text-zinc-400 hover:text-white font-bold">✕</button>
+              <button onClick={() => setIsPaymentModalOpen(false)} className="text-zinc-400 hover:text-white font-bold cursor-pointer">✕</button>
             </div>
 
             <div className="bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 space-y-2 text-xs">
@@ -614,7 +611,7 @@ export default function PlayArenaPage() {
                   <button
                     key={prov}
                     onClick={() => setMomoProvider(prov)}
-                    className={`py-2.5 rounded-xl text-xs font-black border transition ${
+                    className={`py-2.5 rounded-xl text-xs font-black border transition cursor-pointer ${
                       momoProvider === prov
                         ? 'bg-amber-400 border-amber-400 text-black'
                         : 'bg-zinc-900 border-zinc-800 text-zinc-300'
@@ -640,7 +637,7 @@ export default function PlayArenaPage() {
             <button
               onClick={handleProcessMomoPayment}
               disabled={isProcessing}
-              className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition disabled:opacity-50"
+              className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition disabled:opacity-50 cursor-pointer"
             >
               {isProcessing ? 'Processing Payment...' : `Authorize GH₵ ${finalPayable.toFixed(2)}`}
             </button>

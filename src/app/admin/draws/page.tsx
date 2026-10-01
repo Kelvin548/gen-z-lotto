@@ -13,8 +13,11 @@ interface Draw {
 
 export default function AdminDrawsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDrawId, setEditingDrawId] = useState<string | null>(null);
   const [gameType, setGameType] = useState('Premium 5/90');
+  const [status, setStatus] = useState<'Active' | 'Scheduled' | 'Closed'>('Active');
   const [closingTime, setClosingTime] = useState('');
+  
   const [draws, setDraws] = useState<Draw[]>([
     { id: '#DRW-2026-901', gameType: 'Premium 5/90', status: 'Active', closingTime: 'Today, 6:00 PM' },
     { id: '#DRW-2026-902', gameType: 'Midweek Special', status: 'Scheduled', closingTime: 'Tomorrow, 4:00 PM' }
@@ -32,25 +35,57 @@ export default function AdminDrawsPage() {
     }
   }, []);
 
-  const handleCreateDraw = (e: React.FormEvent) => {
+  const saveAndSyncDraws = (updatedDraws: Draw[]) => {
+    setDraws(updatedDraws);
+    localStorage.setItem('gen_z_lotto_admin_draws', JSON.stringify(updatedDraws));
+    localStorage.setItem('gen_z_lotto_active_draws', JSON.stringify(updatedDraws));
+  };
+
+  const handleOpenCreateModal = () => {
+    setEditingDrawId(null);
+    setGameType('Premium 5/90');
+    setStatus('Active');
+    setClosingTime('');
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (draw: Draw) => {
+    setEditingDrawId(draw.id);
+    setGameType(draw.gameType);
+    setStatus(draw.status);
+    setClosingTime(draw.closingTime);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteDraw = (id: string) => {
+    if (confirm('Are you sure you want to delete this draw? It will instantly disappear for customers.')) {
+      const updated = draws.filter(d => d.id !== id);
+      saveAndSyncDraws(updated);
+    }
+  };
+
+  const handleSaveDraw = (e: React.FormEvent) => {
     e.preventDefault();
     if (!closingTime) return;
 
-    const newDraw: Draw = {
-      id: `#DRW-${Math.floor(1000 + Math.random() * 9000)}`,
-      gameType,
-      status: 'Active',
-      closingTime,
-    };
+    let updated: Draw[];
+    if (editingDrawId) {
+      // Edit existing draw
+      updated = draws.map(d => d.id === editingDrawId ? { ...d, gameType, status, closingTime } : d);
+    } else {
+      // Create new draw
+      const newDraw: Draw = {
+        id: `#DRW-${Math.floor(1000 + Math.random() * 9000)}`,
+        gameType,
+        status,
+        closingTime,
+      };
+      updated = [newDraw, ...draws];
+    }
 
-    const updated = [newDraw, ...draws];
-    setDraws(updated);
-    
-    // Save to admin and customer-accessible storage
-    localStorage.setItem('gen_z_lotto_admin_draws', JSON.stringify(updated));
-    localStorage.setItem('gen_z_lotto_active_draws', JSON.stringify(updated));
-
+    saveAndSyncDraws(updated);
     setIsModalOpen(false);
+    setEditingDrawId(null);
     setClosingTime('');
   };
 
@@ -64,10 +99,10 @@ export default function AdminDrawsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative z-10">
         <div>
           <h1 className="text-3xl font-black text-white">Manage Draws</h1>
-          <p className="text-zinc-400 text-sm mt-1">Schedule new 5/90 lottery draws, close active betting windows, and settle winning numbers.</p>
+          <p className="text-zinc-400 text-sm mt-1">Schedule, edit, or delete 5/90 lottery draws instantly synced with the customer portal.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreateModal}
           className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold text-xs tracking-wide shadow-lg shadow-yellow-500/20 hover:opacity-90 transition cursor-pointer"
         >
           + Create New Draw
@@ -97,14 +132,27 @@ export default function AdminDrawsPage() {
                     <span className={`px-2 py-1 rounded border ${
                       draw.status === 'Active' 
                         ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        : draw.status === 'Scheduled'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        : 'bg-red-500/10 text-red-400 border-red-500/20'
                     }`}>
                       {draw.status}
                     </span>
                   </td>
                   <td className="py-4 px-4">{draw.closingTime}</td>
-                  <td className="py-4 px-4 text-right">
-                    <button className="text-yellow-400 hover:underline font-semibold">Manage</button>
+                  <td className="py-4 px-4 text-right space-x-3">
+                    <button 
+                      onClick={() => handleOpenEditModal(draw)}
+                      className="text-amber-400 hover:underline font-semibold"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteDraw(draw.id)}
+                      className="text-red-400 hover:underline font-semibold"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -113,12 +161,14 @@ export default function AdminDrawsPage() {
         </div>
       </div>
 
-      {/* Create Draw Modal */}
+      {/* Create / Edit Draw Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-zinc-950 border border-yellow-500/30 rounded-3xl p-6 w-full max-w-md space-y-6 shadow-2xl relative">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-              <h2 className="text-lg font-bold text-yellow-400">Schedule New 5/90 Draw</h2>
+              <h2 className="text-lg font-bold text-yellow-400">
+                {editingDrawId ? 'Edit 5/90 Draw' : 'Schedule New 5/90 Draw'}
+              </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
                 className="text-zinc-400 hover:text-white text-sm font-bold"
@@ -127,7 +177,7 @@ export default function AdminDrawsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateDraw} className="space-y-4">
+            <form onSubmit={handleSaveDraw} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-zinc-300">Game Type / Draw Name</label>
                 <select 
@@ -140,6 +190,20 @@ export default function AdminDrawsPage() {
                   <option value="Monday Special">Monday Special</option>
                   <option value="Fortune Thursday">Fortune Thursday</option>
                   <option value="National Weekly">National Weekly</option>
+                  <option value="Aseda Sunday">Aseda Sunday</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-zinc-300">Status</label>
+                <select 
+                  value={status} 
+                  onChange={(e: any) => setStatus(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-500/50"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Closed">Closed</option>
                 </select>
               </div>
 
@@ -167,7 +231,7 @@ export default function AdminDrawsPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-xs font-black shadow-lg shadow-yellow-500/20 hover:opacity-90 transition cursor-pointer"
                 >
-                  Publish Draw
+                  {editingDrawId ? 'Save Changes' : 'Publish Draw'}
                 </button>
               </div>
             </form>
