@@ -5,11 +5,13 @@ import Link from 'next/link';
 
 interface Ticket {
   id: string;
+  bookingCode: string;
   gameType: string;
+  gameName: string;
   numbers: number[];
-  stake: number;
   total: number;
   date: string;
+  createdAt: string;
   status: string;
   paymentMethod?: string;
 }
@@ -18,16 +20,26 @@ export default function MyTicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
 
   useEffect(() => {
-    // Load tickets matching the active user's isolated storage key
+    // Check both user-specific tickets and general master customer tickets so nothing is ever missed
     const currentUser = localStorage.getItem('active_username') || 'customer_user';
-    const storageKey = `user_tickets_${currentUser}`;
-    const savedTickets = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    setTickets(savedTickets);
+    const userStorageKey = `user_tickets_${currentUser}`;
+    const userTickets = JSON.parse(localStorage.getItem(userStorageKey) || '[]');
+    const generalTickets = JSON.parse(localStorage.getItem('gen_z_lotto_tickets') || '[]');
+    const adminTickets = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
+
+    // Combine and deduplicate by bookingCode or id
+    const combinedMap = new Map();
+    [...userTickets, ...generalTickets, ...adminTickets].forEach((t: Ticket) => {
+      if (t && (t.bookingCode || t.id)) {
+        combinedMap.set(t.bookingCode || t.id, t);
+      }
+    });
+
+    setTickets(Array.from(combinedMap.values()));
   }, []);
 
   return (
     <div className="space-y-6 relative z-10 max-w-5xl mx-auto">
-      
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -71,30 +83,35 @@ export default function MyTicketsPage() {
               {/* Ticket Top Row: ID & Status Badge */}
               <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-black text-amber-400">{ticket.id}</span>
+                  <span className="text-sm font-black text-amber-400">{ticket.bookingCode || ticket.id}</span>
                   <span className="text-xs text-zinc-500">•</span>
-                  <span className="text-xs font-semibold text-zinc-400">{ticket.date}</span>
+                  <span className="text-xs font-semibold text-zinc-400">{ticket.createdAt || ticket.date}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase tracking-widest">
                     {ticket.gameType}
                   </span>
                   <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
-                    {ticket.status}
+                    {ticket.status || 'Active'}
                   </span>
                 </div>
+              </div>
+
+              {/* Game Name */}
+              <div className="text-xs text-zinc-300">
+                Game: <strong className="text-white">{ticket.gameName || '5/90 Lotto'}</strong>
               </div>
 
               {/* Middle Row: Selected Numbers */}
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Selected Numbers:</span>
                 <div className="flex flex-wrap gap-2">
-                  {ticket.numbers.map((num) => (
+                  {ticket.numbers && ticket.numbers.map((num, i) => (
                     <div
-                      key={num}
+                      key={i}
                       className="w-10 h-10 rounded-xl bg-amber-400 text-black font-black text-xs flex items-center justify-center shadow-md shadow-amber-400/20"
                     >
-                      {num < 10 ? `0${num}` : num}
+                      {num !== null && num !== undefined ? (num < 10 ? `0${num}` : num) : '--'}
                     </div>
                   ))}
                 </div>
@@ -103,18 +120,16 @@ export default function MyTicketsPage() {
               {/* Bottom Row: Stake & Payment info */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-3 border-t border-zinc-900 gap-2 text-xs">
                 <div className="text-zinc-400">
-                  Payment: <span className="text-white font-semibold">{ticket.paymentMethod || 'Mobile Money'}</span>
+                  Total Stake: <strong className="text-amber-400">GH¢ {(ticket.total || 0).toFixed(2)}</strong>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-zinc-400">Total Stake:</span>
-                  <span className="text-sm font-black text-amber-400">GH₵ {ticket.stake}.00</span>
+                <div className="text-zinc-400">
+                  Payment: <strong className="text-white">{ticket.paymentMethod || 'Mobile Money'}</strong>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
-
     </div>
   );
 }

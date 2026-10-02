@@ -1,5 +1,4 @@
-﻿// src/app/customer/play/page.tsx
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -322,9 +321,15 @@ export default function PlayArenaPage() {
         paymentMethod: `${momoProvider} Momo (${momoNumber})`
       };
 
-      const storageKey = `user_tickets_${currentUser}`;
-      const existingTickets = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      localStorage.setItem(storageKey, JSON.stringify([newTicket, ...existingTickets]));
+      // Save to user-specific storage AND general master storage so it always displays
+      const currentUserKey = localStorage.getItem('active_username') || 'customer_user';
+      const storageKey = `user_tickets_${currentUserKey}`;
+      const existingUserTickets = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      localStorage.setItem(storageKey, JSON.stringify([newTicket, ...existingUserTickets]));
+
+      const generalTicketsKey = 'gen_z_lotto_tickets';
+      const existingGeneralTickets = JSON.parse(localStorage.getItem(generalTicketsKey) || '[]');
+      localStorage.setItem(generalTicketsKey, JSON.stringify([newTicket, ...existingGeneralTickets]));
 
       const masterLedger = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
       localStorage.setItem('admin_all_tickets', JSON.stringify([newTicket, ...masterLedger]));
@@ -484,11 +489,11 @@ export default function PlayArenaPage() {
             <div className="space-y-2.5 pt-2 border-t border-zinc-900 text-xs">
               <div className="flex justify-between text-zinc-300">
                 <span>Price:</span>
-                <span className="font-bold text-amber-400">GH₵ {baseTotalStake.toFixed(2)}</span>
+                <span className="font-bold text-amber-400">GH¢ {baseTotalStake.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Minimum Win:</span>
-                <span className="font-black text-emerald-400">GH₵ {minWin.toFixed(2)}</span>
+                <span className="font-black text-emerald-400">GH¢ {minWin.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>LINES:</span>
@@ -513,7 +518,7 @@ export default function PlayArenaPage() {
             </div>
 
             <div className="space-y-2 pt-3 border-t border-zinc-900">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Amount (GH₵):</span>
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Amount (GH¢):</span>
               
               <div className="grid grid-cols-4 gap-2">
                 {stakeOptions.map((amount) => {
@@ -536,7 +541,7 @@ export default function PlayArenaPage() {
 
               <div className="pt-2">
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">GH₵</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">GH¢</span>
                   <input
                     type="number"
                     min="1"
@@ -552,7 +557,7 @@ export default function PlayArenaPage() {
             <div className="pt-3 border-t border-zinc-900 flex items-center justify-between">
               <span className="text-xs uppercase font-bold text-zinc-400">Final Payable:</span>
               <span className="text-xl font-black text-amber-400">
-                GH₵ {finalPayable.toFixed(2)}
+                GH¢ {finalPayable.toFixed(2)}
               </span>
             </div>
 
@@ -584,7 +589,7 @@ export default function PlayArenaPage() {
               {selectedGameType === 'Banker' && (
                 <div className="flex justify-between text-zinc-400"><span>Banker Number:</span> <span className="text-amber-400 font-bold">{bankerNumber}</span></div>
               )}
-              <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH₵ {finalPayable.toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-400"><span>Final Payable:</span> <span className="text-amber-400 font-black text-sm">GH¢ {finalPayable.toFixed(2)}</span></div>
             </div>
 
             <div className="space-y-3">
