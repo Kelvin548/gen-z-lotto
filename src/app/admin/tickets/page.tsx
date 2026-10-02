@@ -1,16 +1,119 @@
+// src/app/admin/tickets/page.tsx
 'use client';
 
-export default function AdminTicketsPage() {
+import { useState, useEffect } from 'react';
+
+export default function AdminAllTicketsPage() {
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const loadAllTickets = () => {
+      const masterLedger = localStorage.getItem('admin_all_tickets');
+      if (masterLedger) {
+        try {
+          const parsed = JSON.parse(masterLedger);
+          if (Array.isArray(parsed)) {
+            setTickets(parsed);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    loadAllTickets();
+    window.addEventListener('storage', loadAllTickets);
+    return () => window.removeEventListener('storage', loadAllTickets);
+  }, []);
+
+  const filteredTickets = tickets.filter(t => 
+    (t.bookingCode || t.id)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (t.username || t.user || t.customerPhone)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (t.gameName || t.game || t.drawName)?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-black tracking-tight mb-1">All Platform Tickets</h1>
-        <p className="text-xs text-zinc-400">Monitor all user ticket entries, stakes, and win statuses across the platform.</p>
+    <div className="space-y-6 relative z-10 max-w-7xl mx-auto p-6 text-white">
+      {/* Header */}
+      <div className="border-b border-yellow-500/20 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-2">
+            <span>🎟️</span> Master Ledger
+          </div>
+          <h2 className="text-3xl font-black tracking-tight text-white">All Platform Tickets</h2>
+          <p className="text-xs text-zinc-400 mt-1">Monitor all user ticket entries, stakes, and win statuses across the platform.</p>
+        </div>
+        
+        {/* Search input */}
+        <div className="w-full sm:w-72">
+          <input
+            type="text"
+            placeholder="Search by code, user, or game..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-2xl bg-zinc-900 border border-yellow-500/20 px-4 py-3 text-xs text-white font-bold focus:outline-none focus:border-yellow-400 shadow-inner"
+          />
+        </div>
       </div>
 
-      <div className="bg-zinc-950/80 border border-zinc-800 rounded-3xl p-8 text-center text-zinc-400 text-xs">
-        No ticket logs found or system is synced with live database entries.
-      </div>
+      {/* Tickets Table */}
+      {filteredTickets.length === 0 ? (
+        <div className="text-center py-20 bg-zinc-950/80 border border-zinc-900 rounded-3xl text-zinc-500 text-xs shadow-2xl space-y-2">
+          <p className="text-sm font-bold text-zinc-400">No ticket logs found in active storage.</p>
+          <p className="text-[11px] text-zinc-600">Tickets placed by customers in the play arena will automatically appear here instantly.</p>
+        </div>
+      ) : (
+        <div className="bg-zinc-950/90 border border-yellow-500/30 rounded-3xl p-6 shadow-2xl overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-zinc-900 text-yellow-400 font-extrabold uppercase tracking-wider">
+                <th className="py-4 px-4">Booking Code & Time</th>
+                <th className="py-4 px-4">Customer / Contact</th>
+                <th className="py-4 px-4">Game / Draw</th>
+                <th className="py-4 px-4">Type</th>
+                <th className="py-4 px-4">Numbers</th>
+                <th className="py-4 px-4">Stake (GH₵)</th>
+                <th className="py-4 px-4">Min Win (GH₵)</th>
+                <th className="py-4 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-900">
+              {filteredTickets.map((t, idx) => {
+                const displayCode = t.bookingCode || t.id || `BK-${100000 + idx}`;
+                const displayGame = t.gameName || t.game || t.drawName || 'NLA VAG Monday';
+                const displayUser = t.customerPhone || t.username || t.user || '0245883582';
+                const displayTimestamp = t.createdAt || t.date || 'Today';
+
+                return (
+                  <tr key={t.id || idx} className="hover:bg-zinc-900/40 transition">
+                    <td className="py-4 px-4">
+                      <div className="font-mono font-black text-yellow-400 text-sm">{displayCode}</div>
+                      <div className="text-[10px] text-zinc-400 font-semibold mt-0.5">🕒 {displayTimestamp}</div>
+                    </td>
+                    <td className="py-4 px-4 font-bold text-white flex items-center gap-1.5 pt-5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+                      {displayUser}
+                    </td>
+                    <td className="py-4 px-4 font-semibold text-zinc-300">{displayGame}</td>
+                    <td className="py-4 px-4 font-bold text-amber-300 uppercase">{t.gameType}</td>
+                    <td className="py-4 px-4 font-mono font-bold text-zinc-200">
+                      {t.gameType === 'Banker' ? `[Banker: ${t.bankerNumber}]` : (t.numbers?.join(', ') || 'N/A')}
+                    </td>
+                    <td className="py-4 px-4 font-black text-white">GH₵ {Number(t.total || t.stake || 0).toFixed(2)}</td>
+                    <td className="py-4 px-4 font-black text-emerald-400">GH₵ {Number(t.minWin || 0).toFixed(2)}</td>
+                    <td className="py-4 px-4">
+                      <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30 font-bold text-[10px]">
+                        {t.status || 'Active'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

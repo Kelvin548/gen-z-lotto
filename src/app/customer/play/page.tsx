@@ -61,31 +61,28 @@ export default function PlayArenaPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    // Load dynamic active draws created by admin from localStorage
     const savedAdminDraws = localStorage.getItem('gen_z_lotto_active_draws');
+    let loadedDraws = defaultDrawsList;
+
     if (savedAdminDraws) {
       try {
         const parsed = JSON.parse(savedAdminDraws);
-        if (parsed && parsed.length > 0) {
-          const formatted = parsed.map((d: any) => ({
-            name: d.gameType,
-            closingTime: d.closingTime,
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          loadedDraws = parsed.map((d: any) => ({
+            name: d.gameType || d.name,
+            closingTime: d.closingTime || '7:30 PM',
             timeString: '19:30',
-            day: 'Today'
+            day: d.day || 'Today'
           }));
-          setDrawsList(formatted);
-          setSelectedDraw(formatted[0].name);
-          setClosingTime(formatted[0].closingTime);
-          return;
         }
       } catch (e) {
         console.error(e);
       }
     }
 
-    // Fallback to default next draw if no admin draws exist
-    setSelectedDraw(defaultDrawsList[0].name);
-    setClosingTime(defaultDrawsList[0].closingTime);
+    setDrawsList(loadedDraws);
+    setSelectedDraw(loadedDraws[0].name);
+    setClosingTime(loadedDraws[0].closingTime);
   }, []);
 
   const gameTypes = [
@@ -284,42 +281,28 @@ export default function PlayArenaPage() {
     setIsProcessing(true);
 
     try {
-      const amountMinor = Math.round(finalPayable * 100);
-      const idempotencyKey = `dep-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      const currentUser = localStorage.getItem('active_username') || 'customer_user';
-
-      const response = await fetch('/api/wallet/deposit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          amountMinor: amountMinor,
-          idempotencyKey: idempotencyKey,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.errors?.[0] || data.message || 'Payment initialization failed.');
-      }
-
-      setIsProcessing(false);
-      setIsPaymentModalOpen(false);
-
-      const storageKey = `user_tickets_${currentUser}`;
       const bookingCode = `BK-${Math.floor(100000 + Math.random() * 900000)}`;
+      const currentUser = momoNumber ? `${momoProvider} (${momoNumber})` : 'Customer';
 
       const ticketNumbers = selectedGameType === 'Banker' 
         ? [bankerNumber] 
         : selectedNumbers;
 
+      const now = new Date();
+      const timestampString = now.toLocaleString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+
       const newTicket = {
         id: `#TKT-${Math.floor(1000 + Math.random() * 9000)}`,
         bookingCode: bookingCode,
         username: currentUser,
+        customerPhone: momoNumber,
         gameType: selectedGameType,
         gameName: selectedDraw,
         numbers: ticketNumbers,
@@ -333,26 +316,26 @@ export default function PlayArenaPage() {
         minWin: minWin,
         maxWin: maxWin,
         date: new Date().toLocaleDateString(),
+        createdAt: timestampString,
         closingTime: closingTime,
         status: 'Active',
         paymentMethod: `${momoProvider} Momo (${momoNumber})`
       };
 
+      const storageKey = `user_tickets_${currentUser}`;
       const existingTickets = JSON.parse(localStorage.getItem(storageKey) || '[]');
       localStorage.setItem(storageKey, JSON.stringify([newTicket, ...existingTickets]));
 
       const masterLedger = JSON.parse(localStorage.getItem('admin_all_tickets') || '[]');
       localStorage.setItem('admin_all_tickets', JSON.stringify([newTicket, ...masterLedger]));
 
+      setIsProcessing(false);
+      setIsPaymentModalOpen(false);
       setSelectedNumbers([]);
       setBankerNumber(null);
 
-      if (data.authorizationUrl) {
-        window.location.href = data.authorizationUrl;
-      } else {
-        alert(`Payment prompt initialized! Your Booking Code is: ${bookingCode}`);
-        window.location.href = '/customer/tickets';
-      }
+      alert(`Payment successful! Your Booking Code is: ${bookingCode}`);
+      window.location.href = '/customer/tickets';
     } catch (error: any) {
       setIsProcessing(false);
       alert(error.message || 'An error occurred during payment processing.');
@@ -404,7 +387,7 @@ export default function PlayArenaPage() {
             >
               {drawsList.map((draw) => (
                 <option key={draw.name} value={draw.name}>
-                  {draw.name} — Closes at {draw.closingTime}
+                  {draw.name} — Closes at {draw.closingTime} ({draw.day})
                 </option>
               ))}
             </select>

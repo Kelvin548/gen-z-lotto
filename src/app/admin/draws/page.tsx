@@ -11,28 +11,53 @@ interface Draw {
   closingTime: string;
 }
 
+const defaultDrawsList: Draw[] = [
+  { id: '#DRW-2026-901', gameType: 'NLA VAG Monday', status: 'Active', closingTime: 'Monday, 9:30 AM' },
+  { id: '#DRW-2026-902', gameType: 'Moon Rush Monday', status: 'Active', closingTime: 'Monday, 1:00 PM' },
+  { id: '#DRW-2026-903', gameType: 'Monday Special', status: 'Active', closingTime: 'Monday, 7:30 PM' },
+  { id: '#DRW-2026-904', gameType: 'NLA VAG Tuesday', status: 'Active', closingTime: 'Tuesday, 9:30 AM' },
+  { id: '#DRW-2026-905', gameType: 'Moon Rush Tuesday', status: 'Active', closingTime: 'Tuesday, 1:00 PM' },
+  { id: '#DRW-2026-906', gameType: 'Lucky Tuesday', status: 'Active', closingTime: 'Tuesday, 7:30 PM' },
+  { id: '#DRW-2026-907', gameType: 'NLA VAG Wednesday', status: 'Active', closingTime: 'Wednesday, 9:30 AM' },
+  { id: '#DRW-2026-908', gameType: 'Moon Rush Wednesday', status: 'Active', closingTime: 'Wednesday, 1:00 PM' },
+  { id: '#DRW-2026-909', gameType: 'Midweek', status: 'Active', closingTime: 'Wednesday, 7:30 PM' },
+  { id: '#DRW-2026-910', gameType: 'NLA VAG Thursday', status: 'Active', closingTime: 'Thursday, 9:30 AM' },
+  { id: '#DRW-2026-911', gameType: 'Moon Rush Thursday', status: 'Active', closingTime: 'Thursday, 1:00 PM' },
+  { id: '#DRW-2026-912', gameType: 'Fortune Thursday', status: 'Active', closingTime: 'Thursday, 7:30 PM' },
+  { id: '#DRW-2026-913', gameType: 'NLA VAG Friday', status: 'Active', closingTime: 'Friday, 9:30 AM' },
+  { id: '#DRW-2026-914', gameType: 'Moon Rush Friday', status: 'Active', closingTime: 'Friday, 1:00 PM' },
+  { id: '#DRW-2026-915', gameType: 'Friday Bonanza', status: 'Active', closingTime: 'Friday, 7:30 PM' },
+  { id: '#DRW-2026-916', gameType: 'NLA VAG Saturday', status: 'Active', closingTime: 'Saturday, 9:30 AM' },
+  { id: '#DRW-2026-917', gameType: 'Moon Rush Saturday', status: 'Active', closingTime: 'Saturday, 1:00 PM' },
+  { id: '#DRW-2026-918', gameType: 'National', status: 'Active', closingTime: 'Saturday, 7:30 PM' },
+  { id: '#DRW-2026-919', gameType: 'Aseda Sunday', status: 'Active', closingTime: 'Sunday, 5:30 PM' }
+];
+
 export default function AdminDrawsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDrawId, setEditingDrawId] = useState<string | null>(null);
-  const [gameType, setGameType] = useState('Premium 5/90');
+  const [gameType, setGameType] = useState('NLA VAG Monday');
   const [status, setStatus] = useState<'Active' | 'Scheduled' | 'Closed'>('Active');
   const [closingTime, setClosingTime] = useState('');
   
-  const [draws, setDraws] = useState<Draw[]>([
-    { id: '#DRW-2026-901', gameType: 'Premium 5/90', status: 'Active', closingTime: 'Today, 6:00 PM' },
-    { id: '#DRW-2026-902', gameType: 'Midweek Special', status: 'Scheduled', closingTime: 'Tomorrow, 4:00 PM' }
-  ]);
+  const [draws, setDraws] = useState<Draw[]>(defaultDrawsList);
 
-  // Load saved draws from localStorage on mount
+  // Load saved draws from localStorage on mount or initialize default full list
   useEffect(() => {
     const savedDraws = localStorage.getItem('gen_z_lotto_admin_draws');
     if (savedDraws) {
       try {
-        setDraws(JSON.parse(savedDraws));
+        const parsed = JSON.parse(savedDraws);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setDraws(parsed);
+          return;
+        }
       } catch (e) {
         console.error(e);
       }
     }
+    // Default initialization if storage is empty
+    saveAndSyncDraws(defaultDrawsList);
   }, []);
 
   const saveAndSyncDraws = (updatedDraws: Draw[]) => {
@@ -43,7 +68,7 @@ export default function AdminDrawsPage() {
 
   const handleOpenCreateModal = () => {
     setEditingDrawId(null);
-    setGameType('Premium 5/90');
+    setGameType('NLA VAG Monday');
     setStatus('Active');
     setClosingTime('');
     setIsModalOpen(true);
@@ -70,10 +95,8 @@ export default function AdminDrawsPage() {
 
     let updated: Draw[];
     if (editingDrawId) {
-      // Edit existing draw
       updated = draws.map(d => d.id === editingDrawId ? { ...d, gameType, status, closingTime } : d);
     } else {
-      // Create new draw
       const newDraw: Draw = {
         id: `#DRW-${Math.floor(1000 + Math.random() * 9000)}`,
         gameType,
@@ -112,9 +135,9 @@ export default function AdminDrawsPage() {
       {/* Draws Table Card */}
       <div className="bg-zinc-950/85 backdrop-blur-xl p-6 rounded-3xl border border-yellow-500/25 shadow-2xl space-y-4 relative z-10">
         <h3 className="text-lg font-bold text-yellow-400">Active & Upcoming Draws</h3>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto custom-scrollbar">
           <table className="w-full text-left text-xs text-zinc-300">
-            <thead className="border-b border-zinc-800 text-zinc-400 uppercase">
+            <thead className="border-b border-zinc-800 text-zinc-400 uppercase sticky top-0 bg-zinc-950">
               <tr>
                 <th className="py-3 px-4">Draw ID</th>
                 <th className="py-3 px-4">Game Type</th>
@@ -127,7 +150,7 @@ export default function AdminDrawsPage() {
               {draws.map((draw) => (
                 <tr key={draw.id}>
                   <td className="py-4 px-4 font-bold text-white">{draw.id}</td>
-                  <td className="py-4 px-4">{draw.gameType}</td>
+                  <td className="py-4 px-4 font-black">{draw.gameType}</td>
                   <td className="py-4 px-4">
                     <span className={`px-2 py-1 rounded border ${
                       draw.status === 'Active' 
@@ -143,13 +166,13 @@ export default function AdminDrawsPage() {
                   <td className="py-4 px-4 text-right space-x-3">
                     <button 
                       onClick={() => handleOpenEditModal(draw)}
-                      className="text-amber-400 hover:underline font-semibold"
+                      className="text-amber-400 hover:underline font-semibold cursor-pointer"
                     >
                       Edit
                     </button>
                     <button 
                       onClick={() => handleDeleteDraw(draw.id)}
-                      className="text-red-400 hover:underline font-semibold"
+                      className="text-red-400 hover:underline font-semibold cursor-pointer"
                     >
                       Delete
                     </button>
@@ -171,7 +194,7 @@ export default function AdminDrawsPage() {
               </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="text-zinc-400 hover:text-white text-sm font-bold"
+                className="text-zinc-400 hover:text-white text-sm font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -180,18 +203,14 @@ export default function AdminDrawsPage() {
             <form onSubmit={handleSaveDraw} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-zinc-300">Game Type / Draw Name</label>
-                <select 
+                <input 
+                  type="text"
+                  placeholder="e.g., Monday Special"
                   value={gameType} 
                   onChange={(e) => setGameType(e.target.value)}
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-500/50"
-                >
-                  <option value="Premium 5/90">Premium 5/90</option>
-                  <option value="Midweek Special">Midweek Special</option>
-                  <option value="Monday Special">Monday Special</option>
-                  <option value="Fortune Thursday">Fortune Thursday</option>
-                  <option value="National Weekly">National Weekly</option>
-                  <option value="Aseda Sunday">Aseda Sunday</option>
-                </select>
+                  required
+                />
               </div>
 
               <div className="space-y-2">
@@ -211,7 +230,7 @@ export default function AdminDrawsPage() {
                 <label className="text-xs font-semibold text-zinc-300">Closing Time & Date</label>
                 <input 
                   type="text" 
-                  placeholder="e.g., Today, 6:00 PM or Oct 2, 5:00 PM"
+                  placeholder="e.g., Today, 6:00 PM or Monday, 7:30 PM"
                   value={closingTime}
                   onChange={(e) => setClosingTime(e.target.value)}
                   required
@@ -223,7 +242,7 @@ export default function AdminDrawsPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-zinc-900 text-zinc-300 text-xs font-semibold hover:bg-zinc-800 transition"
+                  className="px-4 py-2 rounded-xl bg-zinc-900 text-zinc-300 text-xs font-semibold hover:bg-zinc-800 transition cursor-pointer"
                 >
                   Cancel
                 </button>
