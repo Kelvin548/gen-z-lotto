@@ -104,25 +104,25 @@ export default function AdminResultsPage() {
   };
 
   return (
-    <div className="space-y-6 relative z-10 max-w-5xl mx-auto text-white">
+    <div className="space-y-6 relative z-10 max-w-3xl mx-auto text-white p-2 sm:p-4">
       {/* Background Bubbles */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-40">
         <FloatingBubbles />
       </div>
       
       {/* Header */}
-      <div className="border-b border-yellow-500/20 pb-5 relative z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-2">
+      <div className="border-b border-yellow-500/20 pb-4 relative z-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-1.5">
           <span>⚙️</span> Admin Control Panel
         </div>
-        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">Publish & Manage Results</h2>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-1">Input official daily winning numbers and machine ball drops for customer viewing.</p>
+        <h2 className="text-2xl font-black tracking-tight text-white">Publish & Manage Results</h2>
+        <p className="text-xs text-zinc-400 mt-0.5">Input official daily winning numbers and machine ball drops for customer viewing.</p>
       </div>
 
       {/* Input / Publish Form */}
-      <form onSubmit={handlePublish} className="bg-zinc-950/90 backdrop-blur-xl border border-yellow-500/30 rounded-3xl p-5 sm:p-8 shadow-2xl space-y-6 relative z-10">
+      <form onSubmit={handlePublish} className="bg-zinc-950/90 backdrop-blur-xl border border-yellow-500/30 rounded-2xl p-4 sm:p-6 shadow-2xl space-y-4 relative z-10">
         <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-          <h3 className="text-sm sm:text-base font-black text-yellow-400 tracking-wide">
+          <h3 className="text-sm font-black text-yellow-400 tracking-wide">
             {editingId ? '✏️ Edit Published Result' : '➕ Publish New Draw Result'}
           </h3>
           {editingId && (
@@ -141,44 +141,44 @@ export default function AdminResultsPage() {
         </div>
 
         {/* Dropdown selectors for Draw Name & Date Picker */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-extrabold uppercase tracking-widest text-yellow-400">Select Draw Name</label>
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400">Select Draw Name</label>
             <div className="relative">
               <select
                 value={selectedDraw}
                 onChange={(e) => setSelectedDraw(e.target.value)}
-                className="w-full rounded-2xl bg-zinc-900 border border-yellow-500/20 p-3.5 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-yellow-400 cursor-pointer appearance-none shadow-inner"
+                className="w-full rounded-xl bg-zinc-900 border border-yellow-500/20 px-3.5 py-3 text-xs font-bold text-white focus:outline-none focus:border-yellow-400 cursor-pointer appearance-none shadow-inner"
               >
                 {drawsList.map((draw) => (
                   <option key={draw} value={draw} className="bg-zinc-900 text-white">{draw}</option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-yellow-400 text-xs">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-yellow-400 text-xs">
                 ▼
               </div>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-extrabold uppercase tracking-widest text-yellow-400">Draw Date</label>
+          <div className="space-y-1">
+            <label className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400">Draw Date</label>
             <div className="relative">
               <input
                 type="date"
                 value={drawDate}
                 onChange={(e) => setDrawDate(e.target.value)}
-                className="w-full rounded-2xl bg-zinc-900 border border-yellow-500/20 p-3.5 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-yellow-400 cursor-pointer shadow-inner uppercase tracking-wider"
+                className="w-full rounded-xl bg-zinc-900 border border-yellow-500/20 px-3.5 py-3 text-xs font-bold text-white focus:outline-none focus:border-yellow-400 cursor-pointer shadow-inner uppercase tracking-wider"
               />
             </div>
           </div>
         </div>
 
         {/* Winning Numbers Input Matrix */}
-        <div className="space-y-2">
-          <label className="text-[11px] font-extrabold uppercase tracking-widest text-yellow-400 flex items-center gap-1.5">
-            <span>⚡</span> Winning Numbers (5 Numbers Required)
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400 flex items-center gap-1.5">
+            <span>⚡</span> Winning Numbers (5 Required)
           </label>
-          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+          <div className="grid grid-cols-5 gap-2">
             {winningNumbers.map((num, idx) => (
               <input
                 key={idx}
@@ -188,7 +188,7 @@ export default function AdminResultsPage() {
                 placeholder={`#${idx + 1}`}
                 value={num}
                 onChange={(e) => handleWinNumChange(idx, e.target.value)}
-                className="h-12 sm:h-16 rounded-xl sm:rounded-2xl bg-zinc-900 border border-yellow-500/30 text-center text-lg sm:text-xl font-black text-yellow-400 focus:outline-none focus:border-yellow-400 shadow-inner"
+                className="h-12 rounded-xl bg-zinc-900 border border-yellow-500/30 text-center text-base font-black text-yellow-400 focus:outline-none focus:border-yellow-400 shadow-inner"
                 required
               />
             ))}
@@ -196,11 +196,11 @@ export default function AdminResultsPage() {
         </div>
 
         {/* Machine Numbers Input Matrix */}
-        <div className="space-y-2 pt-2 border-t border-zinc-900">
-          <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-            <span>⚙️</span> Machine Numbers (Optional / 5 Balls)
+        <div className="space-y-1.5 pt-2 border-t border-zinc-900">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+            <span>⚙️</span> Machine Numbers (Optional)
           </label>
-          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+          <div className="grid grid-cols-5 gap-2">
             {machineNumbers.map((num, idx) => (
               <input
                 key={idx}
@@ -210,7 +210,7 @@ export default function AdminResultsPage() {
                 placeholder={`M${idx + 1}`}
                 value={num}
                 onChange={(e) => handleMachNumChange(idx, e.target.value)}
-                className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-zinc-900 border border-zinc-800 text-center text-sm sm:text-base font-bold text-zinc-300 focus:outline-none focus:border-yellow-400 shadow-inner"
+                className="h-11 rounded-xl bg-zinc-900 border border-zinc-800 text-center text-xs font-bold text-zinc-300 focus:outline-none focus:border-yellow-400 shadow-inner"
               />
             ))}
           </div>
@@ -218,58 +218,57 @@ export default function AdminResultsPage() {
 
         <button
           type="submit"
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black text-xs uppercase tracking-wider hover:opacity-90 transition shadow-lg shadow-yellow-500/20 cursor-pointer"
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black text-xs uppercase tracking-wider hover:opacity-90 transition shadow-md shadow-yellow-500/20 cursor-pointer"
         >
-          {editingId ? 'Update Published Result' : 'Publish Results to Customer Dashboard →'}
+          {editingId ? 'Update Published Result' : 'Publish Results →'}
         </button>
       </form>
 
-      {/* Published History & Management Grid */}
-      <div className="space-y-4 pt-2 relative z-10">
-        <h3 className="text-lg font-black text-white">Manage Existing Published Results</h3>
+      {/* Published History & Management Cards */}
+      <div className="space-y-3 relative z-10">
+        <h3 className="text-base font-black text-white">Manage Existing Results</h3>
         {publishedResults.length === 0 ? (
-          <div className="text-center py-12 bg-zinc-950/60 backdrop-blur-md border border-zinc-800 rounded-3xl text-zinc-500 text-xs">
-            No results published yet. Use the form above to add your first draw result.
+          <div className="text-center py-10 bg-zinc-950/60 backdrop-blur-md border border-zinc-800 rounded-2xl text-zinc-500 text-xs">
+            No results published yet.
           </div>
         ) : (
           <div className="space-y-3">
             {publishedResults.map((res) => (
-              <div key={res.id} className="bg-zinc-950/85 backdrop-blur-md border border-yellow-500/20 hover:border-yellow-500/40 transition rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-2.5">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <span className="text-sm sm:text-base font-black text-white">{res.drawName}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-bold">{res.date}</span>
+              <div key={res.id} className="bg-zinc-950/85 backdrop-blur-md border border-yellow-500/20 hover:border-yellow-500/40 transition rounded-2xl p-4 shadow-xl space-y-3">
+                <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+                  <span className="text-xs font-black text-white">{res.drawName}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-bold">{res.date}</span>
+                </div>
+
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-zinc-500 font-extrabold uppercase text-[9px] mr-1">Win:</span>
+                    {res.winningNumbers.map((n: string, i: number) => (
+                      <span key={i} className="w-7 h-7 rounded-lg bg-amber-400 text-black font-black text-xs flex items-center justify-center shadow">
+                        {n}
+                      </span>
+                    ))}
                   </div>
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap gap-1.5 text-xs items-center">
-                      <span className="text-zinc-500 font-extrabold uppercase text-[9px] mr-1">Win:</span>
-                      {res.winningNumbers.map((n: string, i: number) => (
-                        <span key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-amber-200 to-yellow-500 text-black font-black text-xs flex items-center justify-center shadow">
-                          {n}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 text-xs items-center">
-                      <span className="text-zinc-500 font-extrabold uppercase text-[9px] mr-1">Mach:</span>
-                      {res.machineNumbers.map((m: string, i: number) => (
-                        <span key={i} className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-[11px] flex items-center justify-center">
-                          {m}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-zinc-500 font-extrabold uppercase text-[9px] mr-1">Mach:</span>
+                    {res.machineNumbers.map((m: string, i: number) => (
+                      <span key={i} className="w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-[10px] flex items-center justify-center">
+                        {m}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-0 border-zinc-900 shrink-0">
+                <div className="flex items-center gap-2 pt-2 border-t border-zinc-900">
                   <button
                     onClick={() => handleEdit(res)}
-                    className="flex-1 md:flex-none px-4 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-bold hover:bg-yellow-500 hover:text-black transition cursor-pointer shadow"
+                    className="flex-1 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[11px] font-bold hover:bg-yellow-500 hover:text-black transition cursor-pointer shadow"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(res.id)}
-                    className="flex-1 md:flex-none px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500 hover:text-white transition cursor-pointer shadow"
+                    className="flex-1 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-bold hover:bg-red-500 hover:text-white transition cursor-pointer shadow"
                   >
                     Delete
                   </button>
