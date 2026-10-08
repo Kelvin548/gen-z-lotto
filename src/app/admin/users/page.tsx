@@ -1,4 +1,3 @@
-// src/app/admin/users/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,35 +7,37 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUsers = () => {
-      // Default fallback users if none registered yet
-      const defaultUsers = [
-        { id: '#USR-8492', name: 'Kelvin', email: 'kelvin@genzlotto.com', phone: '0245883582', walletBalance: 5420.00, status: 'Active', joinedDate: '09/15/2026' },
-        { id: '#USR-8493', name: 'Akwasi', email: 'akwasi@genzlotto.com', phone: '0544893582', walletBalance: 120.50, status: 'Active', joinedDate: '09/20/2026' }
-      ];
-
-      const savedUsers = localStorage.getItem('admin_registered_users');
-      if (savedUsers) {
-        try {
-          const parsed = JSON.parse(savedUsers);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setUsers(parsed);
-            return;
-          }
-        } catch (e) {
-          console.error(e);
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        
+        if (data.success && Array.isArray(data.users)) {
+          // Map database user fields to match your UI components
+          const formattedUsers = data.users.map((u: any) => ({
+            id: `#USR-${u.id ? u.id.toString().slice(-4) : '0000'}`,
+            rawId: u.id,
+            name: u.name || u.email?.split('@')[0] || 'User',
+            email: u.email,
+            phone: u.phone || 'N/A',
+            walletBalance: u.walletBalance ?? u.balance ?? 0.00,
+            status: u.status || 'Active',
+            joinedDate: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recently'
+          }));
+          setUsers(formattedUsers);
         }
+      } catch (e) {
+        console.error('Failed to load users from API:', e);
+      } finally {
+        setLoading(false);
       }
-
-      setUsers(defaultUsers);
-      localStorage.setItem('admin_registered_users', JSON.stringify(defaultUsers));
     };
 
-    loadUsers();
-    window.addEventListener('storage', loadUsers);
-    return () => window.removeEventListener('storage', loadUsers);
+    fetchUsers();
   }, []);
 
   const filteredUsers = users.filter(u => 
@@ -81,41 +82,47 @@ export default function AdminUsersPage() {
           <span className="text-xs font-bold text-zinc-400">Total Users: <strong className="text-white">{filteredUsers.length}</strong></span>
         </div>
 
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="border-b border-zinc-900 text-yellow-400 font-extrabold uppercase tracking-wider">
-              <th className="py-4 px-4">User ID / Name</th>
-              <th className="py-4 px-4">Email</th>
-              <th className="py-4 px-4">Wallet Balance</th>
-              <th className="py-4 px-4">Status</th>
-              <th className="py-4 px-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-900">
-            {filteredUsers.map((u) => (
-              <tr key={u.id} className="hover:bg-zinc-900/40 transition">
-                <td className="py-4 px-4 font-bold text-white">
-                  <span className="font-mono text-yellow-400 mr-2">{u.id}</span> — {u.name}
-                </td>
-                <td className="py-4 px-4 text-zinc-300">{u.email}</td>
-                <td className="py-4 px-4 font-black text-amber-400">GH₵ {Number(u.walletBalance || 0).toFixed(2)}</td>
-                <td className="py-4 px-4">
-                  <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30 font-bold text-[10px]">
-                    {u.status || 'Active'}
-                  </span>
-                </td>
-                <td className="py-4 px-4 text-right">
-                  <button
-                    onClick={() => handleViewDetails(u)}
-                    className="text-yellow-400 hover:text-yellow-300 font-bold underline cursor-pointer transition"
-                  >
-                    View Details
-                  </button>
-                </td>
+        {loading ? (
+          <div className="py-12 text-center text-zinc-500 text-xs font-bold">Loading registered users...</div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="py-12 text-center text-zinc-500 text-xs font-bold">No registered users found.</div>
+        ) : (
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-zinc-900 text-yellow-400 font-extrabold uppercase tracking-wider">
+                <th className="py-4 px-4">User ID / Name</th>
+                <th className="py-4 px-4">Email</th>
+                <th className="py-4 px-4">Wallet Balance</th>
+                <th className="py-4 px-4">Status</th>
+                <th className="py-4 px-4 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-zinc-900">
+              {filteredUsers.map((u) => (
+                <tr key={u.rawId || u.id} className="hover:bg-zinc-900/40 transition">
+                  <td className="py-4 px-4 font-bold text-white">
+                    <span className="font-mono text-yellow-400 mr-2">{u.id}</span> — {u.name}
+                  </td>
+                  <td className="py-4 px-4 text-zinc-300">{u.email}</td>
+                  <td className="py-4 px-4 font-black text-amber-400">GH₵ {Number(u.walletBalance || 0).toFixed(2)}</td>
+                  <td className="py-4 px-4">
+                    <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30 font-bold text-[10px]">
+                      {u.status || 'Active'}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 text-right">
+                    <button
+                      onClick={() => handleViewDetails(u)}
+                      className="text-yellow-400 hover:text-yellow-300 font-bold underline cursor-pointer transition"
+                    >
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* User Details Modal */}
