@@ -17,15 +17,11 @@ export default function AdminUsersPage() {
         const data = await res.json();
         
         if (data.success && Array.isArray(data.users)) {
-          // Map database user fields to match your UI components
           const formattedUsers = data.users.map((u: any) => ({
             id: `#USR-${u.id ? u.id.toString().slice(-4) : '0000'}`,
             rawId: u.id,
-            name: u.name || u.email?.split('@')[0] || 'User',
-            email: u.email,
-            phone: u.phone || 'N/A',
-            walletBalance: u.walletBalance ?? u.balance ?? 0.00,
-            status: u.status || 'Active',
+            name: u.name || u.username || `Player ${u.id?.toString().slice(-4) || ''}`,
+            status: u.status || 'PENDING_VERIFICATION',
             joinedDate: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recently'
           }));
           setUsers(formattedUsers);
@@ -42,7 +38,6 @@ export default function AdminUsersPage() {
 
   const filteredUsers = users.filter(u => 
     u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -60,14 +55,14 @@ export default function AdminUsersPage() {
             <span>👥</span> User Directory
           </div>
           <h2 className="text-3xl font-black tracking-tight text-white">User Management</h2>
-          <p className="text-xs text-zinc-400 mt-1">View registered player accounts, monitor wallet balances, and manage account statuses.</p>
+          <p className="text-xs text-zinc-400 mt-1">View registered player accounts and monitor account verification statuses.</p>
         </div>
 
         {/* Search input */}
         <div className="w-full sm:w-72">
           <input
             type="text"
-            placeholder="Search user by name, email..."
+            placeholder="Search user by ID or name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full rounded-2xl bg-zinc-900 border border-yellow-500/20 px-4 py-3 text-xs text-white font-bold focus:outline-none focus:border-yellow-400 shadow-inner"
@@ -91,9 +86,8 @@ export default function AdminUsersPage() {
             <thead>
               <tr className="border-b border-zinc-900 text-yellow-400 font-extrabold uppercase tracking-wider">
                 <th className="py-4 px-4">User ID / Name</th>
-                <th className="py-4 px-4">Email</th>
-                <th className="py-4 px-4">Wallet Balance</th>
                 <th className="py-4 px-4">Status</th>
+                <th className="py-4 px-4">Member Since</th>
                 <th className="py-4 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -103,13 +97,12 @@ export default function AdminUsersPage() {
                   <td className="py-4 px-4 font-bold text-white">
                     <span className="font-mono text-yellow-400 mr-2">{u.id}</span> — {u.name}
                   </td>
-                  <td className="py-4 px-4 text-zinc-300">{u.email}</td>
-                  <td className="py-4 px-4 font-black text-amber-400">GH₵ {Number(u.walletBalance || 0).toFixed(2)}</td>
                   <td className="py-4 px-4">
-                    <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30 font-bold text-[10px]">
-                      {u.status || 'Active'}
+                    <span className="px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-bold text-[10px]">
+                      {u.status}
                     </span>
                   </td>
+                  <td className="py-4 px-4 text-zinc-300 font-medium">{u.joinedDate}</td>
                   <td className="py-4 px-4 text-right">
                     <button
                       onClick={() => handleViewDetails(u)}
@@ -128,7 +121,7 @@ export default function AdminUsersPage() {
       {/* User Details Modal */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-yellow-500/35 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-6">
+          <div className="bg-zinc-950 border border-yellow-500/35 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
               <div>
                 <span className="text-[10px] font-extrabold text-yellow-400 uppercase tracking-widest bg-yellow-500/10 px-2.5 py-1 rounded-full border border-yellow-500/30">Player Account</span>
@@ -149,23 +142,11 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <span className="text-zinc-500 uppercase block font-semibold">Account Status</span>
-                <span className="text-green-400 font-bold">{selectedUser.status || 'Active'}</span>
+                <span className="text-yellow-400 font-bold">{selectedUser.status}</span>
               </div>
-              <div>
-                <span className="text-zinc-500 uppercase block font-semibold">Email Address</span>
-                <span className="text-white font-medium">{selectedUser.email}</span>
-              </div>
-              <div>
-                <span className="text-zinc-500 uppercase block font-semibold">Phone Contact</span>
-                <span className="text-white font-medium">{selectedUser.phone || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-zinc-500 uppercase block font-semibold">Wallet Balance</span>
-                <span className="text-amber-400 font-black text-sm">GH₵ {Number(selectedUser.walletBalance || 0).toFixed(2)}</span>
-              </div>
-              <div>
+              <div className="col-span-2">
                 <span className="text-zinc-500 uppercase block font-semibold">Member Since</span>
-                <span className="text-white font-medium">{selectedUser.joinedDate || 'Recently'}</span>
+                <span className="text-white font-medium">{selectedUser.joinedDate}</span>
               </div>
             </div>
 
