@@ -1,0 +1,1 @@
+export const globalOtpStore = new Map<string, { otp: string; expiresAt: number }>();
